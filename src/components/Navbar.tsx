@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const navLinks = [
   { label: 'Doctors', to: '/doctors' },
-  { label: 'Medicines', to: '/#medicines' },
+  { label: 'Medicines', to: '/medicines' },
   { label: 'MCQ', to: '/#mcq' },
   { label: 'Q&A', to: '/#qa' },
 ];
