@@ -34,6 +34,9 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
           className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
 
+        {/* Dark gradient overlay at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+
         {/* Verified — top left */}
         {doctor.verified ? (
           <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md">
@@ -46,8 +49,16 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
           </div>
         )}
 
-        {/* Availability — top right (with heart below it) */}
-        <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+        {/* Heart — top right only */}
+        <button
+          onClick={(e) => { e.preventDefault(); setSaved((v) => !v); }}
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/85 backdrop-blur-sm shadow hover:bg-white transition-colors"
+        >
+          <Heart className={`w-4 h-4 transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+        </button>
+
+        {/* Availability — bottom left on gradient */}
+        <div className="absolute bottom-3 left-3">
           {doctor.availableToday ? (
             <div className="flex items-center gap-1.5 bg-green-600/90 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md">
               <span className="relative flex w-2 h-2 shrink-0">
@@ -57,18 +68,10 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
               Available Today
             </div>
           ) : (
-            <div className="bg-white/70 backdrop-blur-sm text-gray-500 text-[11px] font-semibold px-2.5 py-1.5 rounded-full shadow">
+            <div className="bg-white/20 backdrop-blur-sm text-white/90 text-[11px] font-semibold px-2.5 py-1.5 rounded-full border border-white/30">
               Not Available
             </div>
           )}
-
-          {/* Heart / save */}
-          <button
-            onClick={(e) => { e.preventDefault(); setSaved((v) => !v); }}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/85 backdrop-blur-sm shadow hover:bg-white transition-colors"
-          >
-            <Heart className={`w-4 h-4 transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-          </button>
         </div>
       </div>
 
