@@ -6,6 +6,7 @@ import {
   Video, Building2, ArrowRight, Check, User, ThumbsUp, ShieldCheck,
   BookOpen, Award, MessageCircle, Share2, QrCode, Download,
   Link2, Facebook, Lock, UserCheck, Activity, Globe, Languages,
+  ChevronDown,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -88,6 +89,7 @@ export default function DoctorProfilePage() {
   const [activeTab, setActiveTab] = useState<InfoTab>('research');
   const [linkCopied, setLinkCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [openChamber, setOpenChamber] = useState<number | null>(0);
 
   const days = getNextDays(DAYS_AHEAD);
 
@@ -525,12 +527,6 @@ export default function DoctorProfilePage() {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h1 className="text-[1.45rem] font-extrabold text-gray-900 leading-tight tracking-tight">{doctor.name}</h1>
-                        {doctor.verified && (
-                          <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
-                            <CheckCircle className="w-3 h-3 text-blue-600" />
-                            Verified
-                          </div>
-                        )}
                       </div>
                       <p className="text-blue-600 font-semibold text-[14px] mt-0.5">{doctor.specialty}</p>
                       <p className="text-gray-400 text-[12px] font-medium mt-0.5">{doctor.degrees}</p>
@@ -783,59 +779,130 @@ export default function DoctorProfilePage() {
               </div>
             </div>
 
-            {/* 3. Chamber Information */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
-              <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-5">Chamber Information</h2>
-              <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                <div className="flex gap-3">
+            {/* 3. Consultation Locations */}
+            <div className="space-y-3">
+
+              {/* Online card — always shown separately */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
                   <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-                    <Building2 className="w-4 h-4 text-blue-600" />
+                    <Video className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Chamber Name</p>
-                    <p className="text-sm font-semibold text-gray-800">{p.chamberName}</p>
+                    <p className="text-sm font-bold text-gray-900">Online Consultation</p>
+                    <p className="text-xs text-gray-400">Video call — available anytime</p>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <p className="text-xs text-gray-400">New Patient</p>
+                    <p className="text-sm font-extrabold text-blue-600">৳ {p.onlineFee.toLocaleString()}</p>
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <div className="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
-                    <Phone className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Phone</p>
-                    <p className="text-sm font-semibold text-gray-800">{p.chamberPhone}</p>
-                  </div>
-                </div>
-                <div className="flex gap-3 sm:col-span-2">
-                  <div className="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center shrink-0">
-                    <MapPin className="w-4 h-4 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">Address</p>
-                    <p className="text-sm font-semibold text-gray-800">{p.chamberAddress}</p>
-                    <a
-                      href={`https://maps.google.com/?q=${encodeURIComponent(p.chamberAddress)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 mt-1.5 text-xs text-blue-600 font-medium hover:underline"
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                      View on Google Maps
-                    </a>
-                  </div>
+                <div className="px-5 py-3 flex items-center justify-between bg-gray-50">
+                  <span className="text-xs text-gray-500">Follow-up fee</span>
+                  <span className="text-xs font-bold text-gray-700">৳ {Math.round(p.onlineFee * 0.75).toLocaleString()}</span>
                 </div>
               </div>
 
-              <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Visiting Hours</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {p.visitingHours.map(({ day, time, closed }) => (
-                  <div
-                    key={day}
-                    className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm ${closed ? 'bg-red-50 border border-red-100' : 'bg-gray-50 border border-gray-100'}`}
-                  >
-                    <span className={`font-semibold ${closed ? 'text-red-400' : 'text-gray-700'}`}>{day}</span>
-                    <span className={`text-xs font-medium ${closed ? 'text-red-400' : 'text-green-700'}`}>{closed ? 'Closed' : time}</span>
-                  </div>
-                ))}
+              {/* Chambers accordion */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-gray-500 shrink-0" />
+                  <h2 className="text-sm font-bold text-gray-900">
+                    Chambers
+                    <span className="ml-2 text-[11px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {(p.chambers ?? [{ name: p.chamberName, address: p.chamberAddress, phone: p.chamberPhone, newPatientFee: p.offlineFee, followUpFee: Math.round(p.offlineFee * 0.75), visitingHours: p.visitingHours }]).length}
+                    </span>
+                  </h2>
+                </div>
+
+                {(p.chambers ?? [{ name: p.chamberName, address: p.chamberAddress, phone: p.chamberPhone, newPatientFee: p.offlineFee, followUpFee: Math.round(p.offlineFee * 0.75), visitingHours: p.visitingHours }]).map((chamber, idx) => {
+                  const isOpen = openChamber === idx;
+                  return (
+                    <div key={idx} className={idx > 0 ? 'border-t border-gray-100' : ''}>
+                      {/* Accordion header */}
+                      <button
+                        onClick={() => setOpenChamber(isOpen ? null : idx)}
+                        className="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                          <Building2 className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate">{chamber.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{chamber.address.split(',').slice(-2).join(',').trim()}</p>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-xs font-bold text-green-600 hidden sm:block">৳ {chamber.newPatientFee.toLocaleString()}</span>
+                          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                      </button>
+
+                      {/* Accordion body */}
+                      {isOpen && (
+                        <div className="px-5 pb-5 space-y-4 border-t border-gray-100 bg-gray-50/50">
+                          {/* Address + map */}
+                          <div className="flex gap-3 pt-4">
+                            <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                              <MapPin className="w-4 h-4 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-400 mb-0.5">Address</p>
+                              <p className="text-sm font-semibold text-gray-800">{chamber.address}</p>
+                              <a
+                                href={`https://maps.google.com/?q=${encodeURIComponent(chamber.address)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 mt-1.5 text-xs text-blue-600 font-medium hover:underline"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                View on Google Maps
+                              </a>
+                            </div>
+                          </div>
+
+                          {/* Phone */}
+                          <div className="flex gap-3">
+                            <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                              <Phone className="w-4 h-4 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-400 mb-0.5">Contact</p>
+                              <p className="text-sm font-semibold text-gray-800">{chamber.phone}</p>
+                            </div>
+                          </div>
+
+                          {/* Fees */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-white rounded-xl p-3 border border-gray-100 text-center">
+                              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">New Patient</p>
+                              <p className="text-base font-extrabold text-green-600">৳ {chamber.newPatientFee.toLocaleString()}</p>
+                            </div>
+                            <div className="bg-white rounded-xl p-3 border border-gray-100 text-center">
+                              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Follow-up</p>
+                              <p className="text-base font-extrabold text-blue-600">৳ {chamber.followUpFee.toLocaleString()}</p>
+                            </div>
+                          </div>
+
+                          {/* Visiting hours */}
+                          <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Visiting Hours</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                              {chamber.visitingHours.map(({ day, time, closed }) => (
+                                <div
+                                  key={day}
+                                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs border ${closed ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'}`}
+                                >
+                                  <span className={`font-semibold ${closed ? 'text-red-400' : 'text-gray-700'}`}>{day}</span>
+                                  <span className={`font-medium ${closed ? 'text-red-400' : 'text-green-700'}`}>{closed ? 'Closed' : time}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

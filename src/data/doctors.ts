@@ -19,15 +19,28 @@ export interface Review {
   avatar: string;
 }
 
+export interface Chamber {
+  name: string;
+  address: string;
+  phone: string;
+  newPatientFee: number;
+  followUpFee: number;
+  visitingHours: VisitingHour[];
+}
+
 export interface DoctorProfile {
   slug: string;
   bio: string;
   onlineFee: number;
   offlineFee: number;
   totalPatients: number;
+  /** @deprecated use chambers[0] instead */
   chamberName: string;
+  /** @deprecated use chambers[0] instead */
   chamberAddress: string;
+  /** @deprecated use chambers[0] instead */
   chamberPhone: string;
+  chambers?: Chamber[];
   education: Education[];
   experienceList: string[];
   specializations: string[];
@@ -153,6 +166,40 @@ export const doctors: Doctor[] = [
       chamberName: 'Square Hospitals Ltd.',
       chamberAddress: '18/F, Bir Uttam Qazi Nuruzzaman Sarak, West Panthapath, Dhaka-1205',
       chamberPhone: '+880 2-8159457',
+      chambers: [
+        {
+          name: 'Square Hospitals Ltd.',
+          address: '18/F, Bir Uttam Qazi Nuruzzaman Sarak, West Panthapath, Dhaka-1205',
+          phone: '+880 2-8159457',
+          newPatientFee: 1500,
+          followUpFee: 1000,
+          visitingHours: [
+            { day: 'Saturday', time: '10:00 AM – 2:00 PM' },
+            { day: 'Sunday', time: '4:00 PM – 8:00 PM' },
+            { day: 'Monday', time: '', closed: true },
+            { day: 'Tuesday', time: '10:00 AM – 2:00 PM' },
+            { day: 'Wednesday', time: '4:00 PM – 8:00 PM' },
+            { day: 'Thursday', time: '10:00 AM – 2:00 PM' },
+            { day: 'Friday', time: '', closed: true },
+          ],
+        },
+        {
+          name: 'Ibn Sina Hospital',
+          address: 'House 48, Road 9/A, Dhanmondi, Dhaka-1209',
+          phone: '+880 2-9671000',
+          newPatientFee: 1200,
+          followUpFee: 800,
+          visitingHours: [
+            { day: 'Saturday', time: '', closed: true },
+            { day: 'Sunday', time: '6:00 PM – 9:00 PM' },
+            { day: 'Monday', time: '6:00 PM – 9:00 PM' },
+            { day: 'Tuesday', time: '', closed: true },
+            { day: 'Wednesday', time: '6:00 PM – 9:00 PM' },
+            { day: 'Thursday', time: '', closed: true },
+            { day: 'Friday', time: '', closed: true },
+          ],
+        },
+      ],
       education: [
         { degree: 'MBBS', institution: 'Sir Salimullah Medical College', year: '2001' },
         { degree: 'MD (Neurology)', institution: 'BSMMU', year: '2008' },
