@@ -509,19 +509,6 @@ export default function DoctorProfilePage() {
                     <p className="text-xs text-gray-600 leading-relaxed line-clamp-5">{p.bio}</p>
                   </div>
 
-                  {/* Specialty icons */}
-                  <div className="px-4 pb-4 flex flex-wrap gap-1.5">
-                    {p.specializations.slice(0, 4).map((s) => (
-                      <span key={s} className="text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
-                        {s}
-                      </span>
-                    ))}
-                    {p.specializations.length > 4 && (
-                      <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                        +{p.specializations.length - 4} more
-                      </span>
-                    )}
-                  </div>
                 </div>
 
                 {/* ── Right panel: name + badges + stats + fee ── */}
