@@ -492,8 +492,8 @@ export default function DoctorProfilePage() {
               {/* Top section: photo panel + info panel */}
               <div className="flex flex-col sm:flex-row">
 
-                {/* ── Left panel: photo + bio + specializations ── */}
-                <div className="sm:w-[240px] shrink-0 flex flex-col border-b sm:border-b-0 sm:border-r border-gray-100">
+                {/* ── Left panel: photo + bio ── */}
+                <div className="sm:w-[240px] shrink-0 flex flex-col border-b sm:border-b-0 sm:border-r border-gray-100 self-start">
                   {/* Rectangular photo */}
                   <div className="w-full h-[200px] sm:h-[220px] overflow-hidden bg-gray-100">
                     <img
@@ -504,7 +504,7 @@ export default function DoctorProfilePage() {
                   </div>
 
                   {/* About bio */}
-                  <div className="p-4 flex-1">
+                  <div className="p-4">
                     <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">About</p>
                     <p className="text-xs text-gray-600 leading-relaxed line-clamp-5">{p.bio}</p>
                   </div>
@@ -596,30 +596,41 @@ export default function DoctorProfilePage() {
                     </div>
                   )}
 
-                  {/* Stats row: 2×2 on mobile, single row on sm+ */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-gray-100">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-1">
-                        <StarRow rating={doctor.rating} />
-                        <span className="text-sm font-extrabold text-gray-800 ml-0.5">{doctor.rating}</span>
+                  {/* Stats row */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden">
+                    {[
+                      {
+                        icon: <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />,
+                        value: String(doctor.rating),
+                        label: `${doctor.reviews} Reviews`,
+                      },
+                      {
+                        icon: <Users className="w-5 h-5 text-blue-500" />,
+                        value: p.totalPatients.toLocaleString(),
+                        label: 'Patients Seen',
+                      },
+                      {
+                        icon: <Briefcase className="w-5 h-5 text-blue-600" />,
+                        value: `${doctor.experience} yrs`,
+                        label: 'Experience',
+                      },
+                      {
+                        icon: <Activity className="w-5 h-5 text-green-500" />,
+                        value: doctor.lastActive ?? 'Today',
+                        label: 'Last Active',
+                      },
+                    ].map(({ icon, value, label }, i) => (
+                      <div
+                        key={i}
+                        className={`flex flex-col items-center justify-center gap-1 py-3 px-2 ${
+                          i > 0 ? 'border-t sm:border-t-0 sm:border-l border-gray-200' : ''
+                        } ${i === 1 ? 'border-l border-gray-200' : ''}`}
+                      >
+                        {icon}
+                        <span className="text-[17px] font-extrabold text-gray-900 leading-none">{value}</span>
+                        <span className="text-[11px] text-gray-400 font-medium">{label}</span>
                       </div>
-                      <p className="text-[11px] text-gray-400">{doctor.reviews} reviews</p>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-extrabold text-blue-700">{p.totalPatients.toLocaleString()}</span>
-                      <p className="text-[11px] text-gray-400">Patients seen</p>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-extrabold text-gray-800">{doctor.experience} yrs</span>
-                      <p className="text-[11px] text-gray-400">Experience</p>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-1">
-                        <Activity className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                        <span className="text-sm font-extrabold text-green-600">{doctor.lastActive ?? 'Today'}</span>
-                      </div>
-                      <p className="text-[11px] text-gray-400">Last active</p>
-                    </div>
+                    ))}
                   </div>
 
                   {/* Fee cards */}
