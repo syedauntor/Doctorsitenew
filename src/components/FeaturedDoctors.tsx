@@ -1,4 +1,5 @@
-import { Star, Clock, MapPin, Calendar, Users } from 'lucide-react';
+import { useState } from 'react';
+import { Star, Clock, MapPin, Calendar, Users, CheckCircle, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const doctors = [
@@ -6,154 +7,251 @@ const doctors = [
     id: 1,
     name: 'Dr. Fahmida Rahman',
     specialty: 'Cardiologist',
+    degrees: 'MBBS, MD (Cardiology), FRCP',
     hospital: 'Apollo Hospital, Dhaka',
-    fee: '৳ 1,200',
+    fee: 1200,
     rating: 4.9,
     reviews: 312,
-    experience: '15 yrs',
-    image: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg?auto=compress&cs=tinysrgb&w=400',
+    experience: 15,
     available: true,
+    verified: true,
     queue: 4,
+    slug: 'dr-fahmida-rahman',
+    image: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg?auto=compress&cs=tinysrgb&w=400',
   },
   {
     id: 2,
     name: 'Dr. Mahbubur Hossain',
     specialty: 'Neurologist',
+    degrees: 'MBBS, MD (Neurology), FCPS',
     hospital: 'Square Hospital, Dhaka',
-    fee: '৳ 1,500',
+    fee: 1500,
     rating: 4.8,
     reviews: 245,
-    experience: '18 yrs',
-    image: 'https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg?auto=compress&cs=tinysrgb&w=400',
+    experience: 18,
     available: true,
+    verified: true,
     queue: 7,
+    slug: 'dr-mahbubur-hossain',
+    image: 'https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg?auto=compress&cs=tinysrgb&w=400',
   },
   {
     id: 3,
     name: 'Dr. Nasrin Sultana',
     specialty: 'Pediatrician',
+    degrees: 'MBBS, DCH, MD (Pediatrics)',
     hospital: 'Dhaka Medical College',
-    fee: '৳ 800',
+    fee: 800,
     rating: 4.9,
     reviews: 503,
-    experience: '12 yrs',
-    image: 'https://images.pexels.com/photos/5214958/pexels-photo-5214958.jpeg?auto=compress&cs=tinysrgb&w=400',
+    experience: 12,
     available: false,
+    verified: true,
     queue: 0,
+    slug: '',
+    image: 'https://images.pexels.com/photos/5214958/pexels-photo-5214958.jpeg?auto=compress&cs=tinysrgb&w=400',
   },
   {
     id: 4,
     name: 'Dr. Rezaul Karim',
     specialty: 'Orthopedist',
+    degrees: 'MBBS, MS (Orthopedics)',
     hospital: 'BIRDEM Hospital, Dhaka',
-    fee: '৳ 1,000',
+    fee: 1000,
     rating: 4.7,
     reviews: 188,
-    experience: '20 yrs',
-    image: 'https://images.pexels.com/photos/4253089/pexels-photo-4253089.jpeg?auto=compress&cs=tinysrgb&w=400',
+    experience: 20,
     available: true,
+    verified: false,
     queue: 3,
+    slug: '',
+    image: 'https://images.pexels.com/photos/4253089/pexels-photo-4253089.jpeg?auto=compress&cs=tinysrgb&w=400',
   },
   {
     id: 5,
     name: 'Dr. Tasneem Akter',
     specialty: 'Dermatologist',
+    degrees: 'MBBS, DDV',
     hospital: 'United Hospital, Dhaka',
-    fee: '৳ 900',
+    fee: 900,
     rating: 4.8,
     reviews: 274,
-    experience: '10 yrs',
-    image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400',
+    experience: 10,
     available: true,
+    verified: true,
     queue: 2,
+    slug: '',
+    image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400',
   },
   {
     id: 6,
     name: 'Dr. Imtiaz Ahmed',
     specialty: 'Psychiatrist',
+    degrees: 'MBBS, MD (Psychiatry)',
     hospital: 'National Institute, Dhaka',
-    fee: '৳ 1,100',
+    fee: 1100,
     rating: 4.6,
     reviews: 142,
-    experience: '14 yrs',
-    image: 'https://images.pexels.com/photos/5215024/pexels-photo-5215024.jpeg?auto=compress&cs=tinysrgb&w=400',
+    experience: 14,
     available: true,
+    verified: false,
     queue: 5,
+    slug: '',
+    image: 'https://images.pexels.com/photos/5215024/pexels-photo-5215024.jpeg?auto=compress&cs=tinysrgb&w=400',
+  },
+  {
+    id: 7,
+    name: 'Dr. Shahida Parvin',
+    specialty: 'Gynecologist',
+    degrees: 'MBBS, FCPS (Gynecology)',
+    hospital: 'Popular Hospital, Dhaka',
+    fee: 1300,
+    rating: 4.9,
+    reviews: 391,
+    experience: 16,
+    available: true,
+    verified: true,
+    queue: 6,
+    slug: '',
+    image: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg?auto=compress&cs=tinysrgb&w=400',
+  },
+  {
+    id: 8,
+    name: 'Dr. Faisal Haque',
+    specialty: 'Eye Specialist',
+    degrees: 'MBBS, DO (Ophthalmology)',
+    hospital: 'Eye Care Hospital, Dhaka',
+    fee: 700,
+    rating: 4.7,
+    reviews: 163,
+    experience: 11,
+    available: false,
+    verified: true,
+    queue: 0,
+    slug: '',
+    image: 'https://images.pexels.com/photos/5327656/pexels-photo-5327656.jpeg?auto=compress&cs=tinysrgb&w=400',
   },
 ];
 
 function DoctorCard({ doctor }: { doctor: typeof doctors[0] }) {
+  const [saved, setSaved] = useState(false);
+  const href = `/doctors/${doctor.slug || doctor.id}`;
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 overflow-hidden group">
-      {/* Image */}
-      <div className="relative h-52 bg-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+
+      {/* Photo */}
+      <div className="relative h-[180px] overflow-hidden shrink-0 bg-gray-100">
         <img
           src={doctor.image}
           alt={doctor.name}
-          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute top-3 left-3">
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-              doctor.available
-                ? 'bg-green-100 text-green-700'
-                : 'bg-red-100 text-red-600'
-            }`}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent pointer-events-none" />
+
+        {/* Verified badge — top left */}
+        {doctor.verified ? (
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">
+            <CheckCircle className="w-2.5 h-2.5" />
+            Verified
+          </div>
+        ) : (
+          <div className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-sm text-gray-500 text-[10px] font-semibold px-2 py-1 rounded-full shadow">
+            Unverified
+          </div>
+        )}
+
+        {/* Heart / bookmark — top right */}
+        <button
+          onClick={() => setSaved((v) => !v)}
+          className="absolute top-2.5 right-2.5 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow hover:bg-white transition-colors"
+        >
+          <Heart className={`w-3.5 h-3.5 transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+        </button>
+
+        {/* Name + specialty + availability over gradient */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6">
+          <Link
+            to={href}
+            className="block text-[15px] font-bold text-white leading-snug hover:text-blue-200 transition-colors drop-shadow"
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${doctor.available ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`} />
-            {doctor.available ? 'Available' : 'Unavailable'}
-          </span>
-        </div>
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1">
-          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-          <span className="text-xs font-bold text-gray-800">{doctor.rating}</span>
-          <span className="text-xs text-gray-400">({doctor.reviews})</span>
+            {doctor.name}
+          </Link>
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] font-semibold text-blue-200 drop-shadow">{doctor.specialty}</p>
+            {doctor.available ? (
+              <span className="flex items-center gap-1 bg-green-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="relative flex w-1.5 h-1.5 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75" />
+                  <span className="relative inline-flex rounded-full w-1.5 h-1.5 bg-green-200" />
+                </span>
+                Today
+              </span>
+            ) : (
+              <span className="bg-white/70 backdrop-blur-sm text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                Unavailable
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Info */}
-      <div className="p-5">
-        <h3 className="text-base font-bold text-gray-900 mb-0.5">
-            <Link to={`/doctors/${doctor.id}`} className="hover:text-blue-600 transition-colors">{doctor.name}</Link>
-          </h3>
-        <p className="text-blue-600 text-sm font-medium mb-3">{doctor.specialty}</p>
+      <div className="p-3.5 flex flex-col flex-1 gap-2.5">
 
-        <div className="space-y-1.5 mb-4">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            {doctor.hospital}
+        <div className="space-y-1">
+          <p className="text-[11px] text-gray-400 truncate leading-snug">{doctor.degrees}</p>
+          <div className="flex items-start gap-1 text-xs text-gray-500">
+            <MapPin className="w-3 h-3 text-gray-400 shrink-0 mt-0.5" />
+            <span className="truncate">{doctor.hospital}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            {doctor.experience} Experience
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-          <div>
-            <p className="text-xs text-gray-400">Consultation Fee</p>
-            <p className="text-lg font-bold text-gray-900">{doctor.fee}</p>
-          </div>
-          {doctor.available && (
-            <div className="text-right">
-              <p className="text-xs text-gray-400">Live Queue</p>
-              <div className="flex items-center gap-1 justify-end">
-                <Users className="w-3.5 h-3.5 text-orange-500" />
-                <span className="text-sm font-bold text-orange-500">{doctor.queue} waiting</span>
-              </div>
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3 text-gray-400 shrink-0" />
+              <span>{doctor.experience} yrs</span>
             </div>
-          )}
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+              <span className="font-bold text-gray-700">{doctor.rating}</span>
+              <span className="text-gray-400">({doctor.reviews})</span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center justify-between pt-2.5 border-t border-gray-100">
+          <div>
+            <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Fee</p>
+            <p className="text-base font-extrabold text-gray-900 leading-none">৳ {doctor.fee.toLocaleString()}</p>
+          </div>
+          <div className="text-right">
+            {doctor.available && doctor.queue > 0 ? (
+              <>
+                <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Queue</p>
+                <div className="flex items-center justify-end gap-1">
+                  <Users className="w-3 h-3 text-orange-500" />
+                  <span className="text-xs font-bold text-orange-500">{doctor.queue} waiting</span>
+                </div>
+              </>
+            ) : (
+              <span className="text-[10px] text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                No queue
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-1.5 mt-auto">
           <Link
-            to={`/doctors/${doctor.id}`}
-            className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5"
+            to={href}
+            className="flex-1 py-2.5 min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all duration-150 flex items-center justify-center gap-1 shadow-sm shadow-blue-200"
           >
             <Calendar className="w-3.5 h-3.5" />
-            Book Appointment
+            Book
           </Link>
-          <button className="flex-none px-3.5 py-2.5 border border-blue-200 text-blue-600 text-xs font-semibold rounded-xl hover:bg-blue-50 active:scale-95 transition-all duration-150 flex items-center gap-1.5">
+          <button
+            disabled={!doctor.available}
+            className="flex-1 py-2.5 min-h-[40px] border-2 border-green-500 text-green-600 text-xs font-bold rounded-lg hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+          >
             <Users className="w-3.5 h-3.5" />
             Queue
           </button>
@@ -174,15 +272,15 @@ export default function FeaturedDoctors() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Doctors</h2>
             <p className="text-gray-500 mt-2 text-base">Experienced doctors ready to help you</p>
           </div>
-          <a
-            href="#"
+          <Link
+            to="/doctors"
             className="shrink-0 px-5 py-2.5 border border-blue-600 text-blue-600 text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors duration-150"
           >
             View All Doctors
-          </a>
+          </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {doctors.map((doctor) => (
             <DoctorCard key={doctor.id} doctor={doctor} />
           ))}

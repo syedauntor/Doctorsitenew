@@ -31,118 +31,125 @@ const specialtyCounts = SPECIALTIES.filter((s) => s !== 'All').map((s) => ({
 }));
 
 function DoctorCard({ doctor }: { doctor: Doctor }) {
+  const [saved, setSaved] = useState(false);
+
   return (
-    <div className="bg-white rounded-xl overflow-hidden flex flex-col shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+    <div className="bg-white rounded-xl overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
 
       {/* Photo */}
-      <div className="relative h-[180px] sm:h-[220px] overflow-hidden shrink-0 bg-gray-100">
+      <div className="relative h-[180px] overflow-hidden shrink-0 bg-gray-100">
         <img
           src={doctor.image}
           alt={doctor.name}
           className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent pointer-events-none" />
 
+        {/* Verified badge — top left */}
         {doctor.verified ? (
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md backdrop-blur-sm">
-            <CheckCircle className="w-3 h-3" />
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">
+            <CheckCircle className="w-2.5 h-2.5" />
             Verified
           </div>
         ) : (
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm text-gray-500 text-[11px] font-semibold px-2.5 py-1.5 rounded-full shadow">
+          <div className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-sm text-gray-500 text-[10px] font-semibold px-2 py-1 rounded-full shadow">
             Unverified
           </div>
         )}
 
-        {doctor.availableToday ? (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-green-600/90 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md">
-            <span className="relative flex w-2 h-2 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75" />
-              <span className="relative inline-flex rounded-full w-2 h-2 bg-green-200" />
-            </span>
-            Available Today
-          </div>
-        ) : (
-          <div className="absolute top-3 right-3 bg-white/70 backdrop-blur-sm text-gray-500 text-[11px] font-semibold px-2.5 py-1.5 rounded-full shadow">
-            Not Available
-          </div>
-        )}
+        {/* Heart / bookmark — top right */}
+        <button
+          onClick={() => setSaved((v) => !v)}
+          className="absolute top-2.5 right-2.5 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow hover:bg-white transition-colors"
+        >
+          <Heart className={`w-3.5 h-3.5 transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+        </button>
 
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-8">
+        {/* Availability — bottom left of photo gradient */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6">
           <Link
             to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
-            className="block text-[16px] sm:text-[17px] font-bold text-white leading-snug hover:text-blue-200 transition-colors drop-shadow"
+            className="block text-[15px] font-bold text-white leading-snug hover:text-blue-200 transition-colors drop-shadow"
           >
             {doctor.name}
           </Link>
-          <p className="text-[13px] font-semibold text-blue-200 drop-shadow">{doctor.specialty}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] font-semibold text-blue-200 drop-shadow">{doctor.specialty}</p>
+            {doctor.availableToday ? (
+              <span className="flex items-center gap-1 bg-green-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="relative flex w-1.5 h-1.5 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75" />
+                  <span className="relative inline-flex rounded-full w-1.5 h-1.5 bg-green-200" />
+                </span>
+                Today
+              </span>
+            ) : (
+              <span className="bg-white/70 backdrop-blur-sm text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                Unavailable
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Info */}
-      <div className="p-4 flex flex-col flex-1 gap-3">
+      <div className="p-3.5 flex flex-col flex-1 gap-2.5">
 
-        <div className="space-y-1.5">
-          <p className="text-xs text-gray-400 truncate leading-snug">{doctor.degrees}</p>
-          <div className="flex items-start gap-1.5 text-sm text-gray-500">
-            <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-[11px] text-gray-400 truncate leading-snug">{doctor.degrees}</p>
+          <div className="flex items-start gap-1 text-xs text-gray-500">
+            <MapPin className="w-3 h-3 text-gray-400 shrink-0 mt-0.5" />
             <span className="truncate">{doctor.chamber}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-sm text-gray-500">
-            <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span>{doctor.experience} years experience</span>
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3 text-gray-400 shrink-0" />
+              <span>{doctor.experience} yrs</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+              <span className="font-bold text-gray-700">{doctor.rating}</span>
+              <span className="text-gray-400">({doctor.reviews})</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-            <span className="font-bold text-gray-800">{doctor.rating}</span>
-            <span className="text-gray-400 text-xs">({doctor.reviews})</span>
-          </div>
-          <span className="w-1 h-1 rounded-full bg-gray-300" />
-          <span className="text-gray-500 text-xs">{doctor.experience} yrs exp</span>
-        </div>
-
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-2.5 border-t border-gray-100">
           <div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Consultation Fee</p>
-            <p className="text-[18px] font-extrabold text-gray-900 leading-none">৳ {doctor.fee.toLocaleString()}</p>
+            <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Fee</p>
+            <p className="text-base font-extrabold text-gray-900 leading-none">৳ {doctor.fee.toLocaleString()}</p>
           </div>
           <div className="text-right">
-            {doctor.availableToday ? (
+            {doctor.availableToday && doctor.queue > 0 ? (
               <>
-                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Live Queue</p>
+                <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Queue</p>
                 <div className="flex items-center justify-end gap-1">
-                  <Users className="w-3.5 h-3.5 text-orange-500" />
-                  <span className="text-sm font-bold text-orange-500">
-                    {doctor.queue > 0 ? `${doctor.queue} waiting` : 'No queue'}
-                  </span>
+                  <Users className="w-3 h-3 text-orange-500" />
+                  <span className="text-xs font-bold text-orange-500">{doctor.queue} waiting</span>
                 </div>
               </>
             ) : (
-              <span className="text-[11px] text-green-600 font-semibold bg-green-50 px-2.5 py-1 rounded-full border border-green-100">
+              <span className="text-[10px] text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
                 No queue
               </span>
             )}
           </div>
         </div>
 
-        {/* Buttons: full-width stacked on very small screens, side by side on sm+ */}
-        <div className="flex flex-col xs:flex-row gap-2 mt-auto pt-1">
+        <div className="flex gap-1.5 mt-auto">
           <Link
             to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
-            className="flex-1 py-3 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm shadow-blue-200"
+            className="flex-1 py-2.5 min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all duration-150 flex items-center justify-center gap-1 shadow-sm shadow-blue-200"
           >
-            <Calendar className="w-4 h-4" />
-            Book Appointment
+            <Calendar className="w-3.5 h-3.5" />
+            Book
           </Link>
           <button
             disabled={!doctor.availableToday}
-            className="flex-1 py-3 min-h-[44px] border-2 border-green-500 text-green-600 text-sm font-bold rounded-lg hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            className="flex-1 py-2.5 min-h-[40px] border-2 border-green-500 text-green-600 text-xs font-bold rounded-lg hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
-            <Users className="w-4 h-4" />
-            Live Queue
+            <Users className="w-3.5 h-3.5" />
+            Queue
           </button>
         </div>
       </div>
@@ -344,7 +351,7 @@ export default function DoctorsPage() {
 
             {paginated.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   {paginated.map((doctor) => (
                     <DoctorCard key={doctor.id} doctor={doctor} />
                   ))}
