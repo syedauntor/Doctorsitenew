@@ -1,4 +1,5 @@
 import { Star, Clock, MapPin, Calendar, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const doctors = [
   {
@@ -112,7 +113,9 @@ function DoctorCard({ doctor }: { doctor: typeof doctors[0] }) {
 
       {/* Info */}
       <div className="p-5">
-        <h3 className="text-base font-bold text-gray-900 mb-0.5">{doctor.name}</h3>
+        <h3 className="text-base font-bold text-gray-900 mb-0.5">
+            <Link to={`/doctors/${doctor.id}`} className="hover:text-blue-600 transition-colors">{doctor.name}</Link>
+          </h3>
         <p className="text-blue-600 text-sm font-medium mb-3">{doctor.specialty}</p>
 
         <div className="space-y-1.5 mb-4">
@@ -143,10 +146,13 @@ function DoctorCard({ doctor }: { doctor: typeof doctors[0] }) {
         </div>
 
         <div className="flex gap-2">
-          <button className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5">
+          <Link
+            to={`/doctors/${doctor.id}`}
+            className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5"
+          >
             <Calendar className="w-3.5 h-3.5" />
             Book Appointment
-          </button>
+          </Link>
           <button className="flex-none px-3.5 py-2.5 border border-blue-200 text-blue-600 text-xs font-semibold rounded-xl hover:bg-blue-50 active:scale-95 transition-all duration-150 flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5" />
             Queue

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Search, SlidersHorizontal, MapPin, Star, Clock, Users,
   Calendar, CheckCircle, ChevronLeft, ChevronRight,
@@ -58,7 +59,7 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
 
       <div className="p-5 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="text-base font-bold text-gray-900 leading-snug">{doctor.name}</h3>
+          <Link to={`/doctors/${doctor.profile?.slug ?? doctor.id}`} className="text-base font-bold text-gray-900 leading-snug hover:text-blue-600 transition-colors">{doctor.name}</Link>
           <div className="flex items-center gap-1 shrink-0">
             <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
             <span className="text-xs font-bold text-gray-700">{doctor.rating}</span>
@@ -97,10 +98,13 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
         </div>
 
         <div className="flex gap-2">
-          <button className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5">
+          <Link
+            to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
+            className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5"
+          >
             <Calendar className="w-3.5 h-3.5" />
             Book Appointment
-          </button>
+          </Link>
           <button
             disabled={!doctor.availableToday}
             className="flex-none px-3 py-2.5 border border-green-500 text-green-600 text-xs font-semibold rounded-xl hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
