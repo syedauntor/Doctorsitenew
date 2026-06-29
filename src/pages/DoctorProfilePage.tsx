@@ -5,7 +5,7 @@ import {
   GraduationCap, Briefcase, Tag, ExternalLink,
   Video, Building2, ArrowRight, Check, User, ThumbsUp, ShieldCheck,
   BookOpen, Award, MessageCircle, Share2, QrCode, Download,
-  Link2, Facebook, Lock, UserCheck, Activity,
+  Link2, Facebook, Lock, UserCheck, Activity, Globe, Languages,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -487,169 +487,229 @@ export default function DoctorProfilePage() {
           <div className="flex-1 min-w-0 space-y-5">
 
             {/* 1. Doctor Header Card */}
-            <div
-              className="rounded-2xl border-l-4 overflow-hidden shadow-[0_4px_32px_-4px_rgba(37,99,235,0.12)]"
-              style={{ borderLeftColor: '#2563EB', background: 'linear-gradient(135deg, #ffffff 60%, #EFF6FF 100%)' }}
-            >
-              <div className="p-5 sm:p-7">
+            <div className="bg-white rounded-2xl border border-gray-200 border-l-4 overflow-hidden shadow-sm" style={{ borderLeftColor: '#2563EB' }}>
 
-                {/* Mobile: vertical centered stack */}
-                <div className="flex flex-col items-center sm:flex-row sm:items-start gap-5">
+              {/* Top section: photo panel + info panel */}
+              <div className="flex flex-col sm:flex-row">
 
-                  {/* Photo */}
-                  <div className="shrink-0 flex flex-col items-center">
-                    <div className="relative">
-                      <img
-                        src={doctor.image}
-                        alt={doctor.name}
-                        className="w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] rounded-full object-cover object-top border-2 border-gray-200"
-                      />
-                      {doctor.verified && (
-                        <div className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-md">
-                          <CheckCircle className="w-3.5 h-3.5 text-white" />
-                        </div>
+                {/* ── Left panel: photo + bio + specializations ── */}
+                <div className="sm:w-[240px] shrink-0 flex flex-col border-b sm:border-b-0 sm:border-r border-gray-100">
+                  {/* Rectangular photo */}
+                  <div className="w-full h-[200px] sm:h-[220px] overflow-hidden bg-gray-100">
+                    <img
+                      src={doctor.image}
+                      alt={doctor.name}
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+
+                  {/* About bio */}
+                  <div className="p-4 flex-1">
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">About</p>
+                    <p className="text-xs text-gray-600 leading-relaxed line-clamp-5">{p.bio}</p>
+                  </div>
+
+                  {/* Specialty icons */}
+                  <div className="px-4 pb-4 flex flex-wrap gap-1.5">
+                    {p.specializations.slice(0, 4).map((s) => (
+                      <span key={s} className="text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+                        {s}
+                      </span>
+                    ))}
+                    {p.specializations.length > 4 && (
+                      <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                        +{p.specializations.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Right panel: name + badges + stats + fee ── */}
+                <div className="flex-1 min-w-0 p-5 sm:p-6 flex flex-col gap-4">
+
+                  {/* Name row */}
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h1 className="text-[1.45rem] font-extrabold text-gray-900 leading-tight tracking-tight">{doctor.name}</h1>
+                        {doctor.verified && (
+                          <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                            <CheckCircle className="w-3 h-3 text-blue-600" />
+                            Verified
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-blue-600 font-semibold text-[14px] mt-0.5">{doctor.specialty}</p>
+                      <p className="text-gray-400 text-[12px] font-medium mt-0.5">{doctor.degrees}</p>
+                    </div>
+
+                    {/* Availability badge */}
+                    <div className="shrink-0">
+                      {doctor.availableToday ? (
+                        <span className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                          <span className="relative flex w-2 h-2 shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full w-2 h-2 bg-green-500" />
+                          </span>
+                          Available Today
+                        </span>
+                      ) : doctor.availableTomorrow ? (
+                        <span className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-xs font-bold px-3 py-1.5 rounded-full">
+                          <span className="w-2 h-2 bg-orange-400 rounded-full shrink-0" />
+                          Available Tomorrow
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 text-gray-400 text-xs font-semibold px-3 py-1.5 rounded-full">
+                          <span className="w-2 h-2 bg-gray-300 rounded-full shrink-0" />
+                          Not Available
+                        </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0 w-full">
-
-                    {/* Name + availability */}
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 text-center sm:text-left">
-                      <div>
-                        <h1 className="text-xl sm:text-[1.5rem] font-extrabold text-gray-900 leading-tight tracking-tight">{doctor.name}</h1>
-                        <p className="text-blue-600 font-semibold text-sm sm:text-[15px] mt-0.5">{doctor.specialty}</p>
-                        <p className="text-gray-400 text-[13px] font-medium mt-0.5">{doctor.degrees}</p>
-                      </div>
-                      <div className="flex justify-center sm:justify-end">
-                        {doctor.availableToday ? (
-                          <span className="relative inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm whitespace-nowrap">
-                            <span className="relative flex w-2 h-2 shrink-0">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                              <span className="relative inline-flex rounded-full w-2 h-2 bg-green-500" />
-                            </span>
-                            Available Today
-                          </span>
-                        ) : doctor.availableTomorrow ? (
-                          <span className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm whitespace-nowrap">
-                            <span className="w-2 h-2 bg-orange-400 rounded-full shrink-0" />
-                            Available Tomorrow
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1.5 bg-gray-100 border border-gray-200 text-gray-400 text-xs font-semibold px-3.5 py-1.5 rounded-full whitespace-nowrap">
-                            <span className="w-2 h-2 bg-gray-300 rounded-full shrink-0" />
-                            Not Available Today
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* BMDC badge */}
+                  {/* BMDC + verification badges */}
+                  <div className="flex flex-col gap-2">
                     {doctor.bmdcVerified && (
-                      <div className="flex justify-center sm:justify-start mt-2">
-                        <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-[11px] font-bold px-3 py-1 rounded-full">
-                          <ShieldCheck className="w-3 h-3 text-green-600" />
-                          BMDC Verified #12345
-                        </div>
+                      <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-[11px] font-bold px-3 py-1 rounded-full self-start">
+                        <ShieldCheck className="w-3 h-3 text-green-600" />
+                        BMDC Verified #12345
                       </div>
                     )}
-
-                    {/* Verification badges — 2 per row on mobile */}
-                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 mt-3">
+                    <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2">
                       {[
                         { key: 'identity', label: 'Identity', active: doctor.identityVerified, Icon: UserCheck, activeClass: 'bg-blue-50 border-blue-200 text-blue-700', iconClass: 'text-blue-600' },
                         { key: 'chamber', label: 'Chamber', active: doctor.chamberVerified, Icon: Building2, activeClass: 'bg-green-50 border-green-200 text-green-700', iconClass: 'text-green-600' },
                         { key: 'bmdc', label: 'BMDC', active: doctor.bmdcVerified, Icon: ShieldCheck, activeClass: 'bg-green-50 border-green-200 text-green-700', iconClass: 'text-green-600' },
                       ].map(({ key, label, active, Icon, activeClass, iconClass }) => (
-                        <div
-                          key={key}
-                          className={`flex items-center gap-2 border rounded-lg px-2.5 py-2 transition-colors ${active ? activeClass : 'bg-gray-50 border-gray-200 text-gray-400'}`}
-                        >
-                          <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${active ? 'bg-white/60' : 'bg-gray-100'}`}>
-                            {active ? <Icon className={`w-3.5 h-3.5 ${iconClass}`} /> : <Lock className="w-3.5 h-3.5 text-gray-400" />}
+                        <div key={key} className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 ${active ? activeClass : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                          {active ? <Icon className={`w-3.5 h-3.5 shrink-0 ${iconClass}`} /> : <Lock className="w-3.5 h-3.5 shrink-0 text-gray-400" />}
+                          <div>
+                            <p className="text-[9px] font-medium opacity-60 leading-none">{active ? 'Verified' : 'Not verified'}</p>
+                            <p className="text-[11px] font-bold leading-tight">{label}</p>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-medium leading-none opacity-70 mb-0.5">{active ? 'Verified' : 'Unverified'}</p>
-                            <p className="text-xs font-bold leading-none truncate">{label}</p>
-                          </div>
-                          {active && <CheckCircle className="w-3 h-3 ml-auto opacity-70 shrink-0" />}
                         </div>
                       ))}
                     </div>
+                  </div>
 
-                    {/* Stats — 2x2 on mobile, single row on desktop */}
-                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 mt-4 pt-4 border-t border-blue-100">
-                      <div className="flex items-center gap-1.5">
+                  {/* Stats row: 2×2 on mobile, single row on sm+ */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-gray-100">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1">
                         <StarRow rating={doctor.rating} />
-                        <span className="text-sm font-extrabold text-gray-800">{doctor.rating}</span>
-                        <span className="text-xs text-gray-400 hidden sm:inline">({doctor.reviews})</span>
+                        <span className="text-sm font-extrabold text-gray-800 ml-0.5">{doctor.rating}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
-                          <Users className="w-3.5 h-3.5 text-blue-600" />
-                        </div>
-                        <span className="text-sm font-bold text-blue-700">{p.totalPatients.toLocaleString()}</span>
-                        <span className="text-xs text-gray-400">patients</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center shrink-0">
-                          <Clock className="w-3.5 h-3.5 text-gray-600" />
-                        </div>
-                        <span className="text-sm font-bold text-gray-800">{doctor.experience} yrs</span>
-                        <span className="text-xs text-gray-400">exp.</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
+                      <p className="text-[11px] text-gray-400">{doctor.reviews} reviews</p>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-extrabold text-blue-700">{p.totalPatients.toLocaleString()}</span>
+                      <p className="text-[11px] text-gray-400">Patients seen</p>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-extrabold text-gray-800">{doctor.experience} yrs</span>
+                      <p className="text-[11px] text-gray-400">Experience</p>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1">
                         <Activity className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                        <span className="text-xs text-gray-500">Active:</span>
-                        <span className="text-xs font-semibold text-green-600">{doctor.lastActive ?? 'Recently'}</span>
+                        <span className="text-sm font-extrabold text-green-600">{doctor.lastActive ?? 'Today'}</span>
                       </div>
+                      <p className="text-[11px] text-gray-400">Last active</p>
                     </div>
+                  </div>
 
-                    {/* Fee cards — stack on mobile, side by side on sm+ */}
-                    <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                      <div className="flex-1 rounded-xl p-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)' }}>
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center">
-                            <Video className="w-4 h-4 text-white" />
-                          </div>
-                          <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">Online</span>
+                  {/* Fee cards */}
+                  <div className="flex flex-col sm:flex-row gap-3 mt-auto">
+                    <div className="flex-1 rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)' }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+                          <Video className="w-3.5 h-3.5 text-white" />
                         </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-white/70 text-[11px]">New Patient</span>
-                            <span className="text-white font-bold text-sm">৳ {p.onlineFee.toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-white/70 text-[11px]">Follow-up</span>
-                            <span className="text-white font-bold text-sm">৳ {Math.round(p.onlineFee * 0.75).toLocaleString()}</span>
-                          </div>
-                        </div>
+                        <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">Online</span>
                       </div>
-
-                      <div className="flex-1 rounded-xl p-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)' }}>
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center">
-                            <Building2 className="w-4 h-4 text-white" />
-                          </div>
-                          <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">Chamber</span>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/70 text-[11px]">New Patient</span>
+                          <span className="text-white font-bold text-sm">৳ {p.onlineFee.toLocaleString()}</span>
                         </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-white/70 text-[11px]">New Patient</span>
-                            <span className="text-white font-bold text-sm">৳ {p.offlineFee.toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-white/70 text-[11px]">Follow-up</span>
-                            <span className="text-white font-bold text-sm">৳ {Math.round(p.offlineFee * 0.75).toLocaleString()}</span>
-                          </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/70 text-[11px]">Follow-up</span>
+                          <span className="text-white font-bold text-sm">৳ {Math.round(p.onlineFee * 0.75).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
+                    <div className="flex-1 rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)' }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+                          <Building2 className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">Chamber</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/70 text-[11px]">New Patient</span>
+                          <span className="text-white font-bold text-sm">৳ {p.offlineFee.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/70 text-[11px]">Follow-up</span>
+                          <span className="text-white font-bold text-sm">৳ {Math.round(p.offlineFee * 0.75).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
+                </div>
+              </div>
+
+              {/* ── Bottom info row: 4 items evenly spaced ── */}
+              <div className="border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+                {/* Visiting Hours */}
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide leading-none mb-0.5">Hours</p>
+                    <p className="text-xs font-bold text-gray-800 truncate">
+                      {p.visitingHours.find(h => !h.closed)?.time?.split('–')[0]?.trim() ?? 'See schedule'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Chamber Location */}
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide leading-none mb-0.5">Location</p>
+                    <p className="text-xs font-bold text-gray-800 truncate">{p.chamberName.split(' ')[0]}</p>
+                  </div>
+                </div>
+
+                {/* Languages */}
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Globe className="w-4 h-4 text-purple-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide leading-none mb-0.5">Languages</p>
+                    <p className="text-xs font-bold text-gray-800">Bangla, English</p>
+                  </div>
+                </div>
+
+                {/* Contact */}
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Phone className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide leading-none mb-0.5">Contact</p>
+                    <p className="text-xs font-bold text-gray-800 truncate">{p.chamberPhone}</p>
                   </div>
                 </div>
               </div>
+
             </div>
 
             {/* Mobile-only: Booking card appears here (top of content, below header) */}
