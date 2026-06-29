@@ -389,12 +389,12 @@ export default function DoctorProfilePage() {
 
   const shareCard = (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
-          <Share2 className="w-4 h-4 text-blue-600" />
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4">
+        <h3 className="text-white font-bold text-base flex items-center gap-2">
+          <Share2 className="w-4 h-4" />
           Share Profile
         </h3>
-        <p className="text-xs text-gray-400 mt-0.5">Help others find this doctor</p>
+        <p className="text-blue-200 text-xs mt-0.5">Help others find this doctor</p>
       </div>
 
       <div className="p-4 sm:p-5 space-y-3">
@@ -495,18 +495,24 @@ export default function DoctorProfilePage() {
                 {/* ── Left panel: photo + bio ── */}
                 <div className="sm:w-[240px] shrink-0 flex flex-col border-b sm:border-b-0 sm:border-r border-gray-100 self-start">
                   {/* Rectangular photo */}
-                  <div className="w-full h-[200px] sm:h-[220px] overflow-hidden bg-gray-100">
+                  <div className="relative w-full h-[200px] sm:h-[220px] overflow-hidden bg-gray-100">
                     <img
                       src={doctor.image}
                       alt={doctor.name}
                       className="w-full h-full object-cover object-top"
                     />
+                    {doctor.verified && (
+                      <div className="absolute top-2 left-2 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">
+                        <CheckCircle className="w-3 h-3" />
+                        Verified
+                      </div>
+                    )}
                   </div>
 
                   {/* About bio */}
                   <div className="p-4">
                     <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">About</p>
-                    <p className="text-xs text-gray-600 leading-relaxed line-clamp-5">{p.bio}</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">{p.bio}</p>
                   </div>
 
                 </div>
