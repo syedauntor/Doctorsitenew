@@ -1,23 +1,14 @@
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import Hero from './components/Hero';
-import StatsBar from './components/StatsBar';
-import FeaturedDoctors from './components/FeaturedDoctors';
-import HowItWorks from './components/HowItWorks';
-import FeaturedMedicines from './components/FeaturedMedicines';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import DoctorsPage from './pages/DoctorsPage';
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Navbar />
-      <main className="flex-1">
-        <Hero />
-        <StatsBar />
-        <FeaturedDoctors />
-        <HowItWorks />
-        <FeaturedMedicines />
-      </main>
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/doctors" element={<DoctorsPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
