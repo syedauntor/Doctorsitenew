@@ -34,17 +34,15 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
   return (
     <div className="bg-white rounded-xl overflow-hidden flex flex-col shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
 
-      {/* ── Photo section ── */}
-      <div className="relative h-[220px] overflow-hidden shrink-0 bg-gray-100">
+      {/* Photo */}
+      <div className="relative h-[180px] sm:h-[220px] overflow-hidden shrink-0 bg-gray-100">
         <img
           src={doctor.image}
           alt={doctor.name}
           className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
-        {/* Bottom gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
 
-        {/* Verified badge — top left */}
         {doctor.verified ? (
           <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md backdrop-blur-sm">
             <CheckCircle className="w-3 h-3" />
@@ -56,7 +54,6 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
           </div>
         )}
 
-        {/* Availability badge — top right */}
         {doctor.availableToday ? (
           <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-green-600/90 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md">
             <span className="relative flex w-2 h-2 shrink-0">
@@ -71,11 +68,10 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
           </div>
         )}
 
-        {/* Name + specialty pinned over bottom of photo */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-8">
           <Link
             to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
-            className="block text-[17px] font-bold text-white leading-snug hover:text-blue-200 transition-colors drop-shadow"
+            className="block text-[16px] sm:text-[17px] font-bold text-white leading-snug hover:text-blue-200 transition-colors drop-shadow"
           >
             {doctor.name}
           </Link>
@@ -83,34 +79,31 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
         </div>
       </div>
 
-      {/* ── Info section ── */}
+      {/* Info */}
       <div className="p-4 flex flex-col flex-1 gap-3">
 
-        {/* Degrees + location + experience */}
         <div className="space-y-1.5">
           <p className="text-xs text-gray-400 truncate leading-snug">{doctor.degrees}</p>
-          <div className="flex items-start gap-1.5 text-xs text-gray-500">
+          <div className="flex items-start gap-1.5 text-sm text-gray-500">
             <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
             <span className="truncate">{doctor.chamber}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <div className="flex items-center gap-1.5 text-sm text-gray-500">
             <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <span>{doctor.experience} years experience</span>
           </div>
         </div>
 
-        {/* Stats row */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1">
             <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
             <span className="font-bold text-gray-800">{doctor.rating}</span>
-            <span className="text-gray-400">({doctor.reviews})</span>
+            <span className="text-gray-400 text-xs">({doctor.reviews})</span>
           </div>
           <span className="w-1 h-1 rounded-full bg-gray-300" />
-          <span className="text-gray-500">{doctor.experience} yrs exp</span>
+          <span className="text-gray-500 text-xs">{doctor.experience} yrs exp</span>
         </div>
 
-        {/* Fee + queue row */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <div>
             <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Consultation Fee</p>
@@ -135,20 +128,20 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-2 mt-auto pt-1">
+        {/* Buttons: full-width stacked on very small screens, side by side on sm+ */}
+        <div className="flex flex-col xs:flex-row gap-2 mt-auto pt-1">
           <Link
             to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
-            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm shadow-blue-200"
+            className="flex-1 py-3 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm shadow-blue-200"
           >
-            <Calendar className="w-3.5 h-3.5" />
+            <Calendar className="w-4 h-4" />
             Book Appointment
           </Link>
           <button
             disabled={!doctor.availableToday}
-            className="flex-1 py-2.5 border-2 border-green-500 text-green-600 text-xs font-bold rounded-lg hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            className="flex-1 py-3 min-h-[44px] border-2 border-green-500 text-green-600 text-sm font-bold rounded-lg hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
-            <Users className="w-3.5 h-3.5" />
+            <Users className="w-4 h-4" />
             Live Queue
           </button>
         </div>
