@@ -782,27 +782,6 @@ export default function DoctorProfilePage() {
             {/* 3. Consultation Locations */}
             <div className="space-y-3">
 
-              {/* Online card — always shown separately */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-                  <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-                    <Video className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">Online Consultation</p>
-                    <p className="text-xs text-gray-400">Video call — available anytime</p>
-                  </div>
-                  <div className="ml-auto text-right">
-                    <p className="text-xs text-gray-400">New Patient</p>
-                    <p className="text-sm font-extrabold text-blue-600">৳ {p.onlineFee.toLocaleString()}</p>
-                  </div>
-                </div>
-                <div className="px-5 py-3 flex items-center justify-between bg-gray-50">
-                  <span className="text-xs text-gray-500">Follow-up fee</span>
-                  <span className="text-xs font-bold text-gray-700">৳ {Math.round(p.onlineFee * 0.75).toLocaleString()}</span>
-                </div>
-              </div>
-
               {/* Chambers accordion */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
