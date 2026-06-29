@@ -256,20 +256,32 @@ export default function DoctorProfilePage() {
                           iconClass: 'text-green-600',
                         },
                       ].map(({ key, label, active, Icon, activeClass, iconClass }) => (
-                        <span
+                        <div
                           key={key}
-                          className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                          className={`inline-flex items-center gap-2 border rounded-lg px-3 py-2 transition-colors ${
                             active
                               ? activeClass
                               : 'bg-gray-50 border-gray-200 text-gray-400'
                           }`}
                         >
-                          {active
-                            ? <Icon className={`w-3 h-3 ${iconClass}`} />
-                            : <Lock className="w-3 h-3 text-gray-400" />
-                          }
-                          {label}
-                        </span>
+                          <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${
+                            active ? 'bg-white/60' : 'bg-gray-100'
+                          }`}>
+                            {active
+                              ? <Icon className={`w-3.5 h-3.5 ${iconClass}`} />
+                              : <Lock className="w-3.5 h-3.5 text-gray-400" />
+                            }
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-medium leading-none opacity-70 mb-0.5">
+                              {active ? 'Verified' : 'Unverified'}
+                            </p>
+                            <p className="text-xs font-bold leading-none">{label.replace(' Verified', '')}</p>
+                          </div>
+                          {active && (
+                            <CheckCircle className="w-3.5 h-3.5 ml-0.5 opacity-70 shrink-0" />
+                          )}
+                        </div>
                       ))}
                     </div>
 
