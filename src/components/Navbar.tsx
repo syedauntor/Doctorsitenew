@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Menu, X, Stethoscope } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Menu, X, Stethoscope, ChevronDown } from 'lucide-react';
 
 const navLinks = [
-  { label: 'Doctors', to: '/doctors' },
-  { label: 'Medicines', to: '/#medicines' },
-  { label: 'MCQ', to: '/#mcq' },
-  { label: 'Q&A', to: '/#qa' },
+  { label: 'Doctors', href: '#doctors' },
+  { label: 'Medicines', href: '#medicines' },
+  { label: 'MCQ', href: '#mcq' },
+  { label: 'Q&A', href: '#qa' },
 ];
 
 export default function Navbar() {
@@ -17,25 +16,25 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0">
+          <a href="/" className="flex items-center gap-2.5 shrink-0">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold text-gray-900 leading-none">
               Emergent<span className="text-blue-600">Health</span>
             </span>
-          </Link>
+          </a>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.label}
-                to={link.to}
+                href={link.href}
                 className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:text-blue-600 hover:bg-blue-50 transition-colors duration-150"
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
           </nav>
 
@@ -70,14 +69,14 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white px-4 pb-4 pt-2">
           {navLinks.map((link) => (
-            <Link
+            <a
               key={link.label}
-              to={link.to}
+              href={link.href}
               className="block px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:text-blue-600 hover:bg-blue-50 transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
-            </Link>
+            </a>
           ))}
           <div className="mt-3 flex flex-col gap-2">
             <a

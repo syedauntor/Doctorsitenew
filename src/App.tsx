@@ -1,16 +1,23 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import DoctorsPage from './pages/DoctorsPage';
-import DoctorProfilePage from './pages/DoctorProfilePage';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Hero from './components/Hero';
+import StatsBar from './components/StatsBar';
+import FeaturedDoctors from './components/FeaturedDoctors';
+import HowItWorks from './components/HowItWorks';
+import FeaturedMedicines from './components/FeaturedMedicines';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/doctors" element={<DoctorsPage />} />
-        <Route path="/doctors/:slug" element={<DoctorProfilePage />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="min-h-screen flex flex-col bg-white">
+      <Navbar />
+      <main className="flex-1">
+        <Hero />
+        <StatsBar />
+        <FeaturedDoctors />
+        <HowItWorks />
+        <FeaturedMedicines />
+      </main>
+      <Footer />
+    </div>
   );
 }
