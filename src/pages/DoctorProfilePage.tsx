@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import {
   CheckCircle, Star, MapPin, Phone, Clock, Users, Calendar,
   GraduationCap, Briefcase, Tag, ChevronLeft, ExternalLink,
-  Video, Building2, ArrowRight, Check, User, ThumbsUp,
+  Video, Building2, ArrowRight, Check, User, ThumbsUp, ShieldCheck,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -127,11 +127,6 @@ export default function DoctorProfilePage() {
                     alt={doctor.name}
                     className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl object-cover object-top border-4 border-white shadow-md"
                   />
-                  {doctor.verified && (
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow">
-                      <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -140,6 +135,11 @@ export default function DoctorProfilePage() {
                       <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
                       <p className="text-blue-600 font-semibold text-base">{doctor.specialty}</p>
                       <p className="text-gray-500 text-sm mt-0.5">{doctor.degrees}</p>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="text-xs text-gray-400 font-medium">BMDC Reg. No.</span>
+                        <span className="text-xs text-gray-600 font-semibold">BMDC-12345</span>
+                      </div>
                     </div>
                     {doctor.availableToday && (
                       <span className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full">
