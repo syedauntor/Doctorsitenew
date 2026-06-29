@@ -49,6 +49,11 @@ export interface Doctor {
   verified: boolean;
   image: string;
   queue: number;
+  bmdcVerified?: boolean;
+  identityVerified?: boolean;
+  chamberVerified?: boolean;
+  availableTomorrow?: boolean;
+  lastActive?: string;
   profile?: DoctorProfile;
 }
 
@@ -79,6 +84,10 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 4,
+    bmdcVerified: true,
+    identityVerified: true,
+    chamberVerified: true,
+    lastActive: 'Today',
     profile: {
       slug: 'dr-fahmida-rahman',
       bio: 'Dr. Fahmida Rahman is a highly experienced Cardiologist with 15 years of dedicated practice in interventional cardiology. She has performed over 2,000 cardiac procedures and is known for her patient-first approach and use of the latest diagnostic technologies.',
@@ -131,6 +140,10 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 7,
+    bmdcVerified: true,
+    identityVerified: true,
+    chamberVerified: false,
+    lastActive: 'Today',
     profile: {
       slug: 'dr-mahbubur-hossain',
       bio: 'Dr. Mahbubur Hossain is a leading Neurologist with 18 years of expertise in treating complex neurological disorders. He is renowned for his skill in managing stroke, epilepsy, and movement disorders, combining cutting-edge research with compassionate patient care.',

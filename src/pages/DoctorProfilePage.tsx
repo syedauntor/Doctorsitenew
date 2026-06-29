@@ -5,7 +5,7 @@ import {
   GraduationCap, Briefcase, Tag, ExternalLink,
   Video, Building2, ArrowRight, Check, User, ThumbsUp, ShieldCheck,
   BookOpen, Award, MessageCircle, Share2, QrCode, Download,
-  Link2, Facebook,
+  Link2, Facebook, Lock, UserCheck, Activity,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -160,67 +160,194 @@ export default function DoctorProfilePage() {
           <div className="flex-1 min-w-0 space-y-6">
 
             {/* 1. Doctor Header Card */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-              <div className="flex flex-col sm:flex-row gap-6">
-                <div className="shrink-0">
-                  <img
-                    src={doctor.image}
-                    alt={doctor.name}
-                    className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl object-cover object-top border-4 border-white shadow-md"
-                  />
-                </div>
+            <div
+              className="rounded-2xl border-l-4 overflow-hidden shadow-[0_4px_32px_-4px_rgba(37,99,235,0.13)]"
+              style={{ borderLeftColor: '#2563EB', background: 'linear-gradient(135deg, #ffffff 60%, #EFF6FF 100%)' }}
+            >
+              <div className="p-7">
+                <div className="flex flex-col sm:flex-row gap-6">
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
-                    <div>
-                      <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
-                      <p className="text-blue-600 font-semibold text-base">{doctor.specialty}</p>
-                      <p className="text-gray-500 text-sm mt-0.5">{doctor.degrees}</p>
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                        <span className="text-xs text-gray-400 font-medium">BMDC Reg. No.</span>
-                        <span className="text-xs text-gray-600 font-semibold">BMDC-12345</span>
+                  {/* Photo */}
+                  <div className="shrink-0 flex flex-col items-center gap-3">
+                    <div className="relative">
+                      <div className="w-[120px] h-[120px] rounded-full p-[3px] bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg">
+                        <img
+                          src={doctor.image}
+                          alt={doctor.name}
+                          className="w-full h-full rounded-full object-cover object-top"
+                        />
+                      </div>
+                      {doctor.verified && (
+                        <div className="absolute bottom-0.5 right-0.5 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+
+                    {/* Top row: name + availability badge */}
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+                      <div>
+                        <h1 className="text-[1.6rem] font-extrabold text-gray-900 leading-tight tracking-tight">{doctor.name}</h1>
+                        <p className="text-blue-600 font-semibold text-[15px] mt-0.5">{doctor.specialty}</p>
+                        <p className="text-gray-400 text-[13px] font-medium mt-0.5">{doctor.degrees}</p>
+                      </div>
+
+                      {/* Availability badge */}
+                      <div>
+                        {doctor.availableToday ? (
+                          <span className="relative inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm">
+                            <span className="relative flex w-2 h-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full w-2 h-2 bg-green-500" />
+                            </span>
+                            Available Today
+                          </span>
+                        ) : doctor.availableTomorrow ? (
+                          <span className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 text-orange-600 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm">
+                            <span className="w-2 h-2 bg-orange-400 rounded-full" />
+                            Available Tomorrow
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1.5 bg-gray-100 border border-gray-200 text-gray-400 text-xs font-semibold px-3.5 py-1.5 rounded-full">
+                            <span className="w-2 h-2 bg-gray-300 rounded-full" />
+                            Not Available Today
+                          </span>
+                        )}
                       </div>
                     </div>
-                    {doctor.availableToday && (
-                      <span className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                        Available Today
-                      </span>
+
+                    {/* BMDC badge */}
+                    {doctor.bmdcVerified && (
+                      <div className="inline-flex items-center gap-1.5 mt-2 bg-green-50 border border-green-200 text-green-700 text-[11px] font-bold px-3 py-1 rounded-full">
+                        <ShieldCheck className="w-3 h-3 text-green-600" />
+                        BMDC Verified #12345
+                      </div>
                     )}
-                  </div>
 
-                  <div className="flex flex-wrap gap-4 mt-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <StarRow rating={doctor.rating} />
-                      <span className="text-sm font-bold text-gray-800">{doctor.rating}</span>
-                      <span className="text-sm text-gray-400">({doctor.reviews} reviews)</span>
+                    {/* Verification badges row */}
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
+                      {[
+                        {
+                          key: 'identity',
+                          label: 'Identity Verified',
+                          active: doctor.identityVerified,
+                          Icon: UserCheck,
+                          activeClass: 'bg-blue-50 border-blue-200 text-blue-700',
+                          iconClass: 'text-blue-600',
+                        },
+                        {
+                          key: 'chamber',
+                          label: 'Chamber Verified',
+                          active: doctor.chamberVerified,
+                          Icon: Building2,
+                          activeClass: 'bg-green-50 border-green-200 text-green-700',
+                          iconClass: 'text-green-600',
+                        },
+                        {
+                          key: 'bmdc',
+                          label: 'BMDC Verified',
+                          active: doctor.bmdcVerified,
+                          Icon: ShieldCheck,
+                          activeClass: 'bg-green-50 border-green-200 text-green-700',
+                          iconClass: 'text-green-600',
+                        },
+                      ].map(({ key, label, active, Icon, activeClass, iconClass }) => (
+                        <span
+                          key={key}
+                          className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                            active
+                              ? activeClass
+                              : 'bg-gray-50 border-gray-200 text-gray-400'
+                          }`}
+                        >
+                          {active
+                            ? <Icon className={`w-3 h-3 ${iconClass}`} />
+                            : <Lock className="w-3 h-3 text-gray-400" />
+                          }
+                          {label}
+                        </span>
+                      ))}
                     </div>
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold text-gray-800">{p.totalPatients.toLocaleString()}</span> total patients
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                      <Clock className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold text-gray-800">{doctor.experience} yrs</span> experience
-                    </div>
-                  </div>
 
-                  <div className="flex flex-wrap gap-3">
-                    <div className="flex items-center gap-2 bg-blue-50 rounded-xl px-4 py-2.5">
-                      <Video className="w-4 h-4 text-blue-600" />
-                      <div>
-                        <p className="text-xs text-blue-500">Online Fee</p>
-                        <p className="text-base font-bold text-blue-700">৳ {p.onlineFee.toLocaleString()}</p>
+                    {/* Stats row */}
+                    <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-blue-100">
+                      {/* Rating */}
+                      <div className="flex items-center gap-1.5">
+                        <StarRow rating={doctor.rating} />
+                        <span className="text-sm font-extrabold text-gray-800">{doctor.rating}</span>
+                        <span className="text-xs text-gray-400">({doctor.reviews} reviews)</span>
+                      </div>
+                      {/* Patients */}
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
+                          <Users className="w-3.5 h-3.5 text-blue-600" />
+                        </div>
+                        <span className="text-sm font-bold text-blue-700">{p.totalPatients.toLocaleString()}</span>
+                        <span className="text-xs text-gray-400">patients</span>
+                      </div>
+                      {/* Experience */}
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
+                          <Clock className="w-3.5 h-3.5 text-gray-600" />
+                        </div>
+                        <span className="text-sm font-bold text-gray-800">{doctor.experience} yrs</span>
+                        <span className="text-xs text-gray-400">experience</span>
+                      </div>
+                      {/* Last active */}
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <Activity className="w-3.5 h-3.5 text-green-500" />
+                        <span className="text-xs text-gray-500">Last active:</span>
+                        <span className="text-xs font-semibold text-green-600">{doctor.lastActive ?? 'Recently'}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5">
-                      <Building2 className="w-4 h-4 text-gray-500" />
-                      <div>
-                        <p className="text-xs text-gray-400">Chamber Fee</p>
-                        <p className="text-base font-bold text-gray-800">৳ {p.offlineFee.toLocaleString()}</p>
+
+                    {/* Fee cards */}
+                    <div className="flex flex-wrap gap-3 mt-4">
+                      {/* Online fee */}
+                      <div className="flex-1 min-w-[140px] rounded-xl p-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)' }}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center">
+                            <Video className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">Online</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-white/70 text-[11px]">New Patient</span>
+                            <span className="text-white font-bold text-sm">৳ {p.onlineFee.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-white/70 text-[11px]">Follow-up</span>
+                            <span className="text-white font-bold text-sm">৳ {Math.round(p.onlineFee * 0.75).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Chamber fee */}
+                      <div className="flex-1 min-w-[140px] rounded-xl p-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)' }}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center">
+                            <Building2 className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">Chamber</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-white/70 text-[11px]">New Patient</span>
+                            <span className="text-white font-bold text-sm">৳ {p.offlineFee.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-white/70 text-[11px]">Follow-up</span>
+                            <span className="text-white font-bold text-sm">৳ {Math.round(p.offlineFee * 0.75).toLocaleString()}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
