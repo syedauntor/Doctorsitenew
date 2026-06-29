@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Search, SlidersHorizontal, MapPin, Star, Clock, Users,
-  Calendar, CheckCircle, ChevronLeft, ChevronRight,
+  Search, SlidersHorizontal, Star, Users,
+  ChevronLeft, ChevronRight,
   Heart, Brain, Eye, Baby, Bone, Stethoscope, Syringe, Activity,
   Lightbulb, X,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import DoctorCard from '../components/DoctorCard';
 import { doctors, SPECIALTIES, type Doctor } from '../data/doctors';
 
 const AVAILABILITY_OPTIONS = ['All', 'Today', 'This Week'] as const;
@@ -30,131 +31,23 @@ const specialtyCounts = SPECIALTIES.filter((s) => s !== 'All').map((s) => ({
   Icon: specialtyIcons[s] ?? Stethoscope,
 }));
 
-function DoctorCard({ doctor }: { doctor: Doctor }) {
-  const [saved, setSaved] = useState(false);
-
-  return (
-    <div className="bg-white rounded-xl overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-
-      {/* Photo */}
-      <div className="relative h-[180px] overflow-hidden shrink-0 bg-gray-100">
-        <img
-          src={doctor.image}
-          alt={doctor.name}
-          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent pointer-events-none" />
-
-        {/* Verified badge — top left */}
-        {doctor.verified ? (
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">
-            <CheckCircle className="w-2.5 h-2.5" />
-            Verified
-          </div>
-        ) : (
-          <div className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-sm text-gray-500 text-[10px] font-semibold px-2 py-1 rounded-full shadow">
-            Unverified
-          </div>
-        )}
-
-        {/* Heart / bookmark — top right */}
-        <button
-          onClick={() => setSaved((v) => !v)}
-          className="absolute top-2.5 right-2.5 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow hover:bg-white transition-colors"
-        >
-          <Heart className={`w-3.5 h-3.5 transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-        </button>
-
-        {/* Availability — bottom left of photo gradient */}
-        <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6">
-          <Link
-            to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
-            className="block text-[15px] font-bold text-white leading-snug hover:text-blue-200 transition-colors drop-shadow"
-          >
-            {doctor.name}
-          </Link>
-          <div className="flex items-center justify-between">
-            <p className="text-[12px] font-semibold text-blue-200 drop-shadow">{doctor.specialty}</p>
-            {doctor.availableToday ? (
-              <span className="flex items-center gap-1 bg-green-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                <span className="relative flex w-1.5 h-1.5 shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75" />
-                  <span className="relative inline-flex rounded-full w-1.5 h-1.5 bg-green-200" />
-                </span>
-                Today
-              </span>
-            ) : (
-              <span className="bg-white/70 backdrop-blur-sm text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                Unavailable
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-3.5 flex flex-col flex-1 gap-2.5">
-
-        <div className="space-y-1">
-          <p className="text-[11px] text-gray-400 truncate leading-snug">{doctor.degrees}</p>
-          <div className="flex items-start gap-1 text-xs text-gray-500">
-            <MapPin className="w-3 h-3 text-gray-400 shrink-0 mt-0.5" />
-            <span className="truncate">{doctor.chamber}</span>
-          </div>
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-gray-400 shrink-0" />
-              <span>{doctor.experience} yrs</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-              <span className="font-bold text-gray-700">{doctor.rating}</span>
-              <span className="text-gray-400">({doctor.reviews})</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-2.5 border-t border-gray-100">
-          <div>
-            <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Fee</p>
-            <p className="text-base font-extrabold text-gray-900 leading-none">৳ {doctor.fee.toLocaleString()}</p>
-          </div>
-          <div className="text-right">
-            {doctor.availableToday && doctor.queue > 0 ? (
-              <>
-                <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Queue</p>
-                <div className="flex items-center justify-end gap-1">
-                  <Users className="w-3 h-3 text-orange-500" />
-                  <span className="text-xs font-bold text-orange-500">{doctor.queue} waiting</span>
-                </div>
-              </>
-            ) : (
-              <span className="text-[10px] text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                No queue
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex gap-1.5 mt-auto">
-          <Link
-            to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
-            className="flex-1 py-2.5 min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all duration-150 flex items-center justify-center gap-1 shadow-sm shadow-blue-200"
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            Book
-          </Link>
-          <button
-            disabled={!doctor.availableToday}
-            className="flex-1 py-2.5 min-h-[40px] border-2 border-green-500 text-green-600 text-xs font-bold rounded-lg hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-          >
-            <Users className="w-3.5 h-3.5" />
-            Queue
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+function toCardData(d: Doctor) {
+  return {
+    id: d.id,
+    name: d.name,
+    specialty: d.specialty,
+    degrees: d.degrees,
+    chamber: d.chamber,
+    fee: d.fee,
+    rating: d.rating,
+    reviews: d.reviews,
+    experience: d.experience,
+    availableToday: d.availableToday,
+    verified: !!d.verified,
+    image: d.image,
+    queue: d.queue,
+    slug: d.profile?.slug,
+  };
 }
 
 export default function DoctorsPage() {
@@ -351,9 +244,9 @@ export default function DoctorsPage() {
 
             {paginated.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {paginated.map((doctor) => (
-                    <DoctorCard key={doctor.id} doctor={doctor} />
+                    <DoctorCard key={doctor.id} doctor={toCardData(doctor)} />
                   ))}
                 </div>
 
