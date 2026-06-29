@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Search, Mic, ChevronDown, ChevronUp, Bookmark, BookmarkCheck,
-  X, Printer, AlertTriangle, Info, FlaskConical, Package,
-  ArrowUpDown, CheckSquare, Square,
+  Search, Mic, Bookmark, BookmarkCheck,
+  AlertTriangle, FlaskConical,
+  ArrowUpDown,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -19,12 +20,22 @@ const SORT_OPTIONS = [
 
 const CATEGORY_BADGE_COLORS: Record<string, string> = {
   Tablet:    'bg-blue-100 text-blue-700',
-  Capsule:   'bg-purple-100 text-purple-700',
+  Capsule:   'bg-amber-100 text-amber-700',
   Syrup:     'bg-yellow-100 text-yellow-700',
   Injection: 'bg-red-100 text-red-700',
   Cream:     'bg-green-100 text-green-700',
   'Eye Drop':'bg-cyan-100 text-cyan-700',
   Inhaler:   'bg-orange-100 text-orange-700',
+};
+
+const PILL_ICON_COLORS: Record<string, string> = {
+  Tablet:    'bg-blue-50 text-blue-500',
+  Capsule:   'bg-amber-50 text-amber-500',
+  Syrup:     'bg-yellow-50 text-yellow-600',
+  Injection: 'bg-red-50 text-red-500',
+  Cream:     'bg-green-50 text-green-600',
+  'Eye Drop':'bg-cyan-50 text-cyan-600',
+  Inhaler:   'bg-orange-50 text-orange-500',
 };
 
 function sortMedicines(list: Medicine[], sort: string): Medicine[] {
@@ -36,372 +47,74 @@ function sortMedicines(list: Medicine[], sort: string): Medicine[] {
   });
 }
 
-// ── Detail Modal ──────────────────────────────────────────────────────────────
-
-function MedicineModal({ medicine, onClose }: { medicine: Medicine; onClose: () => void }) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        {/* Modal header */}
-        <div className="flex items-start justify-between p-6 border-b border-gray-100">
-          <div className="flex-1 min-w-0 pr-4">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h2 className="text-xl font-bold text-gray-900">{medicine.name}</h2>
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_BADGE_COLORS[medicine.category]}`}>
-                {medicine.category}
-              </span>
-            </div>
-            <p className="text-sm text-gray-500">{medicine.generic}</p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              Print
-            </button>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Modal body */}
-        <div className="overflow-y-auto flex-1 p-6 space-y-6">
-          {/* Meta row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-gray-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-gray-400 mb-1">Price/Unit</p>
-              <p className="text-lg font-bold text-blue-600">৳{medicine.pricePerUnit}</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-gray-400 mb-1">Pack Size</p>
-              <p className="text-sm font-semibold text-gray-800">{medicine.packSize}</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-gray-400 mb-1">Manufacturer</p>
-              <p className="text-sm font-semibold text-gray-800">{medicine.countryFlag} {medicine.manufacturer}</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-gray-400 mb-1">Generic</p>
-              <p className="text-sm font-semibold text-gray-800">{medicine.generic}</p>
-            </div>
-          </div>
-
-          {/* Uses */}
-          <section>
-            <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3">
-              <Info className="w-4 h-4 text-blue-500" />
-              Uses & Indications
-            </h3>
-            <ul className="space-y-1.5">
-              {medicine.uses.map((u) => (
-                <li key={u} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                  {u}
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Dosage */}
-          <section>
-            <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3">
-              <FlaskConical className="w-4 h-4 text-green-500" />
-              Dosage & Administration
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-green-50 border border-green-100 rounded-xl p-3">
-                <p className="text-[10px] font-bold text-green-600 uppercase tracking-wide mb-1">Adult Dose</p>
-                <p className="text-sm text-gray-700">{medicine.adultDose}</p>
-              </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-1">Child Dose</p>
-                <p className="text-sm text-gray-700">{medicine.childDose}</p>
-              </div>
-              <div className="bg-purple-50 border border-purple-100 rounded-xl p-3">
-                <p className="text-[10px] font-bold text-purple-600 uppercase tracking-wide mb-1">Maximum Dose</p>
-                <p className="text-sm text-gray-700">{medicine.maxDose}</p>
-              </div>
-            </div>
-          </section>
-
-          {/* Side effects */}
-          <section>
-            <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3">
-              <AlertTriangle className="w-4 h-4 text-orange-500" />
-              Side Effects
-            </h3>
-            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4">
-              <ul className="space-y-1.5">
-                {medicine.sideEffects.map((s) => (
-                  <li key={s} className="flex items-start gap-2 text-sm text-orange-800">
-                    <AlertTriangle className="w-3.5 h-3.5 text-orange-400 mt-0.5 shrink-0" />
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          {/* Contraindications */}
-          <section>
-            <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3">
-              <X className="w-4 h-4 text-red-500" />
-              Contraindications
-            </h3>
-            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-              <ul className="space-y-1.5">
-                {medicine.contraindications.map((c) => (
-                  <li key={c} className="flex items-start gap-2 text-sm text-red-800">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
-                    {c}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          {/* Storage */}
-          <section>
-            <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-2">
-              <Package className="w-4 h-4 text-gray-500" />
-              Storage
-            </h3>
-            <p className="text-sm text-gray-600 bg-gray-50 rounded-xl p-3 border border-gray-100">{medicine.storage}</p>
-          </section>
-
-          {/* Available brands */}
-          <section>
-            <h3 className="text-sm font-bold text-gray-800 mb-3">Available Brands</h3>
-            <div className="flex flex-wrap gap-2">
-              {medicine.availableBrands.map((b) => (
-                <span key={b} className="px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                  {b}
-                </span>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Medicine Card ─────────────────────────────────────────────────────────────
-
 function MedicineCard({
   medicine,
   saved,
   onSave,
-  compared,
-  onCompare,
-  compareDisabled,
-  onViewDetails,
 }: {
   medicine: Medicine;
   saved: boolean;
-  onSave: () => void;
-  compared: boolean;
-  onCompare: () => void;
-  compareDisabled: boolean;
-  onViewDetails: () => void;
+  onSave: (e: React.MouseEvent) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-      {/* Card header */}
-      <div className="p-5">
+    <div
+      onClick={() => navigate(`/medicines/${medicine.slug}`)}
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer relative"
+    >
+      {/* Save button (top-right, stops propagation) */}
+      <button
+        onClick={onSave}
+        className={`absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-xl transition-colors ${
+          saved
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-100 text-gray-400 hover:bg-blue-50 hover:text-blue-600'
+        }`}
+        title={saved ? 'Remove from list' : 'Save to my list'}
+      >
+        {saved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+      </button>
+
+      <div className="p-5 pr-14">
         <div className="flex items-start gap-4">
           {/* Icon */}
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-            <FlaskConical className="w-6 h-6 text-blue-500" />
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${PILL_ICON_COLORS[medicine.category] ?? 'bg-gray-50 text-gray-500'}`}>
+            <FlaskConical className="w-6 h-6" />
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-base font-bold text-gray-900 leading-snug">{medicine.name}</h3>
-                <p className="text-sm text-gray-400 mt-0.5">{medicine.generic}</p>
-              </div>
+            <div className="flex items-start gap-2 flex-wrap">
+              <h3 className="text-base font-bold text-gray-900 leading-snug">{medicine.name}</h3>
               <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full ${CATEGORY_BADGE_COLORS[medicine.category]}`}>
                 {medicine.category}
               </span>
             </div>
 
-            {/* Manufacturer + price row */}
-            <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-              <span className="text-xs text-gray-500">
-                {medicine.countryFlag} {medicine.manufacturer}
-              </span>
-              <div className="text-right">
-                <span className="text-lg font-bold text-blue-600">৳{medicine.pricePerUnit}</span>
-                <span className="text-xs text-gray-400 ml-1">/ unit</span>
-              </div>
-            </div>
+            <p className="text-sm text-blue-600 font-medium mt-0.5">{medicine.generic}</p>
+            <p className="text-xs text-gray-400 mt-1">{medicine.countryFlag} {medicine.manufacturer}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{medicine.packSize}</p>
 
-            <p className="text-xs text-gray-400 mt-1">{medicine.packSize}</p>
+            <div className="flex items-baseline gap-1 mt-3">
+              <span className="text-lg font-bold text-blue-600">৳{medicine.pricePerUnit}</span>
+              <span className="text-xs text-gray-400">/ unit</span>
+              {medicine.mrpPerUnit && medicine.mrpPerUnit > medicine.pricePerUnit && (
+                <span className="text-xs text-gray-400 line-through ml-1">৳{medicine.mrpPerUnit}</span>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Expandable section */}
-        {expanded && (
-          <div className="mt-5 pt-5 border-t border-gray-100 space-y-4">
-            {/* Uses */}
-            <div>
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Uses & Indications</p>
-              <ul className="space-y-1">
-                {medicine.uses.map((u) => (
-                  <li key={u} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
-                    {u}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Dosage */}
-            <div>
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Dosage & Administration</p>
-              <div className="grid grid-cols-1 gap-2">
-                <div className="bg-green-50 rounded-lg p-2.5">
-                  <span className="text-[10px] font-bold text-green-600 uppercase">Adult:</span>
-                  <span className="text-xs text-gray-700 ml-1">{medicine.adultDose}</span>
-                </div>
-                <div className="bg-blue-50 rounded-lg p-2.5">
-                  <span className="text-[10px] font-bold text-blue-600 uppercase">Child:</span>
-                  <span className="text-xs text-gray-700 ml-1">{medicine.childDose}</span>
-                </div>
-                <div className="bg-purple-50 rounded-lg p-2.5">
-                  <span className="text-[10px] font-bold text-purple-600 uppercase">Max:</span>
-                  <span className="text-xs text-gray-700 ml-1">{medicine.maxDose}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Side effects */}
-            <div>
-              <p className="text-xs font-bold text-orange-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                Side Effects
-              </p>
-              <div className="bg-orange-50 border border-orange-100 rounded-lg p-3">
-                <ul className="space-y-1">
-                  {medicine.sideEffects.map((s) => (
-                    <li key={s} className="text-xs text-orange-800 flex items-start gap-1.5">
-                      <span className="mt-1 shrink-0">•</span>{s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Contraindications */}
-            <div>
-              <p className="text-xs font-bold text-red-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                <X className="w-3.5 h-3.5" />
-                Contraindications
-              </p>
-              <div className="bg-red-50 border border-red-100 rounded-lg p-3">
-                <ul className="space-y-1">
-                  {medicine.contraindications.map((c) => (
-                    <li key={c} className="text-xs text-red-800 flex items-start gap-1.5">
-                      <span className="mt-1 shrink-0">•</span>{c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Storage */}
-            <div>
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Storage</p>
-              <p className="text-xs text-gray-600 bg-gray-50 rounded-lg p-2.5">{medicine.storage}</p>
-            </div>
-
-            {/* Available brands */}
-            <div>
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Available Brands</p>
-              <div className="flex flex-wrap gap-1.5">
-                {medicine.availableBrands.map((b) => (
-                  <span key={b} className="px-2.5 py-1 bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-medium rounded-full">
-                    {b}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Expand toggle */}
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-4 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
-        >
-          {expanded ? (
-            <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
-          ) : (
-            <><ChevronDown className="w-3.5 h-3.5" /> Show details</>
-          )}
-        </button>
-      </div>
-
-      {/* Card footer actions */}
-      <div className="px-5 pb-4 flex items-center gap-2 flex-wrap border-t border-gray-50 pt-3">
-        <button
-          onClick={onSave}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-            saved
-              ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-              : 'text-gray-600 border-gray-200 hover:bg-gray-50'
-          }`}
-        >
-          {saved ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
-          {saved ? 'Saved' : 'Save to My List'}
-        </button>
-
-        <button
-          onClick={onCompare}
-          disabled={compareDisabled && !compared}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-            compared
-              ? 'bg-green-600 text-white border-green-600'
-              : 'text-gray-600 border-gray-200 hover:bg-gray-50'
-          }`}
-        >
-          {compared ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
-          Compare
-        </button>
-
-        <button
-          onClick={onViewDetails}
-          className="ml-auto flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors"
-        >
-          View Full Details
-        </button>
       </div>
     </div>
   );
 }
-
-// ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MedicinesPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [sort, setSort] = useState('name-asc');
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
-  const [compareIds, setCompareIds] = useState<number[]>([]);
-  const [modalMedicine, setModalMedicine] = useState<Medicine | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -417,7 +130,8 @@ export default function MedicinesPage() {
     return sortMedicines(list, sort);
   }, [search, category, sort]);
 
-  function toggleSave(id: number) {
+  function toggleSave(e: React.MouseEvent, id: number) {
+    e.stopPropagation();
     setSavedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
@@ -425,17 +139,11 @@ export default function MedicinesPage() {
     });
   }
 
-  function toggleCompare(id: number) {
-    setCompareIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
 
-      {/* ── Page Header ── */}
+      {/* Page Header */}
       <div className="bg-gradient-to-r from-blue-700 to-blue-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-3xl font-bold text-white mb-1.5">Medicine Information</h1>
@@ -443,7 +151,6 @@ export default function MedicinesPage() {
             Search medicines, dosage, side effects and price in Bangladesh
           </p>
 
-          {/* Search bar */}
           <div className="flex gap-2 max-w-3xl">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 pointer-events-none" />
@@ -465,11 +172,10 @@ export default function MedicinesPage() {
         </div>
       </div>
 
-      {/* ── Filter Row ── */}
+      {/* Filter Row */}
       <div className="bg-white border-b border-gray-200 sticky top-16 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-2 flex-wrap justify-between">
-            {/* Category tabs */}
             <div className="flex items-center gap-1.5 flex-wrap">
               {MEDICINE_CATEGORIES.map((cat) => (
                 <button
@@ -486,7 +192,6 @@ export default function MedicinesPage() {
               ))}
             </div>
 
-            {/* Sort */}
             <div className="flex items-center gap-2 shrink-0">
               <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
               <select
@@ -503,11 +208,11 @@ export default function MedicinesPage() {
         </div>
       </div>
 
-      {/* ── Main Content ── */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
         <div className="flex gap-7 items-start">
 
-          {/* ── Left: Results ── */}
+          {/* Results */}
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500 mb-5">
               Showing{' '}
@@ -518,20 +223,16 @@ export default function MedicinesPage() {
               )}
             </p>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filtered.length > 0 ? filtered.map((med) => (
                 <MedicineCard
                   key={med.id}
                   medicine={med}
                   saved={savedIds.has(med.id)}
-                  onSave={() => toggleSave(med.id)}
-                  compared={compareIds.includes(med.id)}
-                  onCompare={() => toggleCompare(med.id)}
-                  compareDisabled={compareIds.length >= 3}
-                  onViewDetails={() => setModalMedicine(med)}
+                  onSave={(e) => toggleSave(e, med.id)}
                 />
               )) : (
-                <div className="text-center py-24">
+                <div className="col-span-2 text-center py-24">
                   <FlaskConical className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <h3 className="text-lg font-semibold text-gray-700 mb-1">No medicines found</h3>
                   <p className="text-gray-400 text-sm mb-4">Try a different search term or category</p>
@@ -546,10 +247,9 @@ export default function MedicinesPage() {
             </div>
           </div>
 
-          {/* ── Sidebar ── */}
+          {/* Sidebar */}
           <aside className="hidden lg:flex flex-col gap-5 w-72 shrink-0">
 
-            {/* Popular searches */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Popular Searches</h3>
               <div className="flex flex-wrap gap-1.5">
@@ -565,7 +265,6 @@ export default function MedicinesPage() {
               </div>
             </div>
 
-            {/* Categories with count */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Categories</h3>
               <ul className="space-y-1">
@@ -578,7 +277,6 @@ export default function MedicinesPage() {
               </ul>
             </div>
 
-            {/* Top manufacturers */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Top Manufacturers</h3>
               <div className="space-y-2">
@@ -593,7 +291,6 @@ export default function MedicinesPage() {
               </div>
             </div>
 
-            {/* Disclaimer */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-yellow-600 shrink-0" />
@@ -606,48 +303,6 @@ export default function MedicinesPage() {
           </aside>
         </div>
       </div>
-
-      {/* ── Compare Bar ── */}
-      {compareIds.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-2xl">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-4 flex-wrap">
-            <span className="text-xs font-bold text-gray-700">Compare ({compareIds.length}/3):</span>
-            <div className="flex items-center gap-2 flex-wrap flex-1">
-              {compareIds.map((id) => {
-                const med = medicines.find((m) => m.id === id);
-                if (!med) return null;
-                return (
-                  <div key={id} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold px-3 py-1.5 rounded-full">
-                    {med.name}
-                    <button onClick={() => toggleCompare(id)} className="hover:text-blue-600">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setCompareIds([])}
-                className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg transition-colors"
-              >
-                Clear
-              </button>
-              <button
-                disabled={compareIds.length < 2}
-                className="px-5 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                Compare Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Detail Modal ── */}
-      {modalMedicine && (
-        <MedicineModal medicine={modalMedicine} onClose={() => setModalMedicine(null)} />
-      )}
 
       <Footer />
     </div>

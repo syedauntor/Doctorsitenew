@@ -4,6 +4,7 @@ import DoctorsPage from './pages/DoctorsPage';
 import DoctorProfilePage from './pages/DoctorProfilePage';
 import LiveQueuePage from './pages/LiveQueuePage';
 import MedicinesPage from './pages/MedicinesPage';
+import MedicineDetailPage from './pages/MedicineDetailPage';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/doctors/:slug" element={<DoctorProfilePage />} />
         <Route path="/queue/:doctorId" element={<LiveQueuePage />} />
         <Route path="/medicines" element={<MedicinesPage />} />
+        <Route path="/medicines/:slug" element={<MedicineDetailPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,29 +1,37 @@
 import { useState } from 'react';
-import { Search, Pill, Info, ShoppingCart, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Pill, ChevronRight } from 'lucide-react';
+import { medicines } from '../data/medicines';
 
-const allMedicines = [
-  { id: 1, name: 'Napa Extra', generic: 'Paracetamol + Caffeine', company: 'Beximco Pharma', type: 'Tablet', price: '৳ 12', category: 'Analgesic' },
-  { id: 2, name: 'Seclo 20', generic: 'Omeprazole', company: 'Square Pharma', type: 'Capsule', price: '৳ 8', category: 'Antacid' },
-  { id: 3, name: 'Amodis 400', generic: 'Metronidazole', company: 'ACI Limited', type: 'Tablet', price: '৳ 6', category: 'Antibiotic' },
-  { id: 4, name: 'Maxpro 40', generic: 'Esomeprazole', company: 'Incepta', type: 'Capsule', price: '৳ 15', category: 'Antacid' },
-  { id: 5, name: 'Cef-3', generic: 'Cefixime', company: 'Renata', type: 'Tablet', price: '৳ 22', category: 'Antibiotic' },
-  { id: 6, name: 'Atova 10', generic: 'Atorvastatin', company: 'Beximco Pharma', type: 'Tablet', price: '৳ 10', category: 'Cardiac' },
-  { id: 7, name: 'Fexo 120', generic: 'Fexofenadine', company: 'Square Pharma', type: 'Tablet', price: '৳ 18', category: 'Antihistamine' },
-  { id: 8, name: 'Losectil 20', generic: 'Omeprazole', company: 'Drug Intl.', type: 'Capsule', price: '৳ 7', category: 'Antacid' },
-];
+const FEATURED_IDS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 const categoryColors: Record<string, string> = {
-  Analgesic: 'bg-blue-50 text-blue-600',
-  Antacid: 'bg-green-50 text-green-700',
-  Antibiotic: 'bg-orange-50 text-orange-600',
-  Cardiac: 'bg-red-50 text-red-600',
-  Antihistamine: 'bg-purple-50 text-purple-600',
+  Tablet:    'bg-blue-50 text-blue-700',
+  Capsule:   'bg-amber-50 text-amber-700',
+  Syrup:     'bg-yellow-50 text-yellow-700',
+  Injection: 'bg-red-50 text-red-700',
+  Cream:     'bg-green-50 text-green-700',
+  'Eye Drop':'bg-cyan-50 text-cyan-700',
+  Inhaler:   'bg-orange-50 text-orange-700',
+};
+
+const pillColorMap: Record<string, string> = {
+  Tablet:    'bg-blue-100 text-blue-600',
+  Capsule:   'bg-amber-100 text-amber-600',
+  Syrup:     'bg-yellow-100 text-yellow-600',
+  Injection: 'bg-red-100 text-red-600',
+  Cream:     'bg-green-100 text-green-600',
+  'Eye Drop':'bg-cyan-100 text-cyan-600',
+  Inhaler:   'bg-orange-100 text-orange-600',
 };
 
 export default function FeaturedMedicines() {
   const [query, setQuery] = useState('');
+  const navigate = useNavigate();
 
-  const filtered = allMedicines.filter(
+  const featured = medicines.filter((m) => FEATURED_IDS.includes(m.id));
+
+  const filtered = featured.filter(
     (m) =>
       m.name.toLowerCase().includes(query.toLowerCase()) ||
       m.generic.toLowerCase().includes(query.toLowerCase()) ||
@@ -58,36 +66,29 @@ export default function FeaturedMedicines() {
 
         {/* Grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filtered.map((med) => (
               <div
                 key={med.id}
-                className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                onClick={() => navigate(`/medicines/${med.slug}`)}
+                className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-                    <Pill className="w-5 h-5 text-green-600" />
+                <div className="flex items-start justify-between mb-2.5">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${pillColorMap[med.category] ?? 'bg-gray-100 text-gray-500'}`}>
+                    <Pill className="w-4.5 h-4.5" />
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${categoryColors[med.category] ?? 'bg-gray-100 text-gray-600'}`}>
+                  <span className={`text-[11px] font-bold px-2 py-1 rounded-full ${categoryColors[med.category] ?? 'bg-gray-100 text-gray-600'}`}>
                     {med.category}
                   </span>
                 </div>
 
-                <h3 className="text-base font-bold text-gray-900">{med.name}</h3>
-                <p className="text-xs text-gray-500 mt-0.5 mb-1">{med.generic}</p>
-                <p className="text-xs text-gray-400">{med.company} &middot; {med.type}</p>
+                <h3 className="text-sm font-bold text-gray-900 leading-snug">{med.name}</h3>
+                <p className="text-xs text-blue-600 mt-0.5 font-medium">{med.generic}</p>
+                <p className="text-xs text-gray-400 mt-1">{med.manufacturer}</p>
 
-                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-lg font-bold text-gray-900">{med.price}</span>
-                  <div className="flex items-center gap-1.5">
-                    <button className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Details">
-                      <Info className="w-4 h-4 text-gray-400" />
-                    </button>
-                    <button className="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 active:scale-95 transition-all duration-150 flex items-center gap-1">
-                      <ShoppingCart className="w-3 h-3" />
-                      Buy
-                    </button>
-                  </div>
+                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-base font-bold text-gray-900">৳{med.pricePerUnit}</span>
+                  <span className="text-xs text-gray-400">/ unit</span>
                 </div>
               </div>
             ))}
@@ -100,13 +101,13 @@ export default function FeaturedMedicines() {
         )}
 
         <div className="text-center mt-10">
-          <a
-            href="#"
+          <button
+            onClick={() => navigate('/medicines')}
             className="inline-flex items-center gap-2 text-green-600 text-sm font-semibold hover:text-green-700 transition-colors"
           >
             Browse Full Medicine List
             <ChevronRight className="w-4 h-4" />
-          </a>
+          </button>
         </div>
       </div>
     </section>
