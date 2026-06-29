@@ -32,82 +32,121 @@ const specialtyCounts = SPECIALTIES.filter((s) => s !== 'All').map((s) => ({
 
 function DoctorCard({ doctor }: { doctor: Doctor }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 overflow-hidden group flex flex-col">
-      <div className="relative h-48 bg-gray-100 overflow-hidden shrink-0">
+    <div className="bg-white rounded-xl overflow-hidden flex flex-col shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+
+      {/* ── Photo section ── */}
+      <div className="relative h-[220px] overflow-hidden shrink-0 bg-gray-100">
         <img
           src={doctor.image}
           alt={doctor.name}
-          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
-        {doctor.verified && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 bg-blue-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+        {/* Bottom gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
+
+        {/* Verified badge — top left */}
+        {doctor.verified ? (
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md backdrop-blur-sm">
             <CheckCircle className="w-3 h-3" />
             Verified
           </div>
+        ) : (
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm text-gray-500 text-[11px] font-semibold px-2.5 py-1.5 rounded-full shadow">
+            Unverified
+          </div>
         )}
+
+        {/* Availability badge — top right */}
         {doctor.availableToday ? (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-green-600/90 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md">
+            <span className="relative flex w-2 h-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75" />
+              <span className="relative inline-flex rounded-full w-2 h-2 bg-green-200" />
+            </span>
             Available Today
           </div>
         ) : (
-          <div className="absolute top-3 right-3 bg-gray-100 border border-gray-200 text-gray-500 text-xs font-medium px-2.5 py-1 rounded-full">
-            Not Today
+          <div className="absolute top-3 right-3 bg-white/70 backdrop-blur-sm text-gray-500 text-[11px] font-semibold px-2.5 py-1.5 rounded-full shadow">
+            Not Available
           </div>
         )}
-      </div>
 
-      <div className="p-5 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <Link to={`/doctors/${doctor.profile?.slug ?? doctor.id}`} className="text-base font-bold text-gray-900 leading-snug hover:text-blue-600 transition-colors">{doctor.name}</Link>
-          <div className="flex items-center gap-1 shrink-0">
-            <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-            <span className="text-xs font-bold text-gray-700">{doctor.rating}</span>
-            <span className="text-xs text-gray-400">({doctor.reviews})</span>
-          </div>
-        </div>
-
-        <p className="text-blue-600 text-sm font-semibold mb-0.5">{doctor.specialty}</p>
-        <p className="text-xs text-gray-500 mb-3">{doctor.degrees}</p>
-
-        <div className="space-y-1.5 mb-4">
-          <div className="flex items-start gap-2 text-xs text-gray-500">
-            <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
-            <span>{doctor.chamber}</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            {doctor.experience} years experience
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mb-4 pb-4 border-t border-gray-100 pt-4 mt-auto">
-          <div>
-            <p className="text-xs text-gray-400">Consultation Fee</p>
-            <p className="text-lg font-bold text-gray-900">৳ {doctor.fee.toLocaleString()}</p>
-          </div>
-          {doctor.availableToday && (
-            <div className="text-right">
-              <p className="text-xs text-gray-400">Live Queue</p>
-              <div className="flex items-center gap-1 justify-end">
-                <Users className="w-3.5 h-3.5 text-orange-500" />
-                <span className="text-sm font-bold text-orange-500">{doctor.queue} waiting</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2">
+        {/* Name + specialty pinned over bottom of photo */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-8">
           <Link
             to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
-            className="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5"
+            className="block text-[17px] font-bold text-white leading-snug hover:text-blue-200 transition-colors drop-shadow"
+          >
+            {doctor.name}
+          </Link>
+          <p className="text-[13px] font-semibold text-blue-200 drop-shadow">{doctor.specialty}</p>
+        </div>
+      </div>
+
+      {/* ── Info section ── */}
+      <div className="p-4 flex flex-col flex-1 gap-3">
+
+        {/* Degrees + location + experience */}
+        <div className="space-y-1.5">
+          <p className="text-xs text-gray-400 truncate leading-snug">{doctor.degrees}</p>
+          <div className="flex items-start gap-1.5 text-xs text-gray-500">
+            <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
+            <span className="truncate">{doctor.chamber}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <span>{doctor.experience} years experience</span>
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+            <span className="font-bold text-gray-800">{doctor.rating}</span>
+            <span className="text-gray-400">({doctor.reviews})</span>
+          </div>
+          <span className="w-1 h-1 rounded-full bg-gray-300" />
+          <span className="text-gray-500">{doctor.experience} yrs exp</span>
+        </div>
+
+        {/* Fee + queue row */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div>
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Consultation Fee</p>
+            <p className="text-[18px] font-extrabold text-gray-900 leading-none">৳ {doctor.fee.toLocaleString()}</p>
+          </div>
+          <div className="text-right">
+            {doctor.availableToday ? (
+              <>
+                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Live Queue</p>
+                <div className="flex items-center justify-end gap-1">
+                  <Users className="w-3.5 h-3.5 text-orange-500" />
+                  <span className="text-sm font-bold text-orange-500">
+                    {doctor.queue > 0 ? `${doctor.queue} waiting` : 'No queue'}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <span className="text-[11px] text-green-600 font-semibold bg-green-50 px-2.5 py-1 rounded-full border border-green-100">
+                No queue
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 mt-auto pt-1">
+          <Link
+            to={`/doctors/${doctor.profile?.slug ?? doctor.id}`}
+            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm shadow-blue-200"
           >
             <Calendar className="w-3.5 h-3.5" />
             Book Appointment
           </Link>
           <button
             disabled={!doctor.availableToday}
-            className="flex-none px-3 py-2.5 border border-green-500 text-green-600 text-xs font-semibold rounded-xl hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            className="flex-1 py-2.5 border-2 border-green-500 text-green-600 text-xs font-bold rounded-lg hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <Users className="w-3.5 h-3.5" />
             Live Queue
