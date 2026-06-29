@@ -592,6 +592,23 @@ export default function DoctorProfilePage() {
                     </div>
                   </div>
 
+                  {/* Specializes in */}
+                  {p.specializations.length > 0 && (
+                    <div className="pt-3 border-t border-gray-100">
+                      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Specializes in</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {p.specializations.map((s) => (
+                          <span
+                            key={s}
+                            className="px-2.5 py-1 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-full hover:bg-blue-100 transition-colors"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Stats row: 2×2 on mobile, single row on sm+ */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-gray-100">
                     <div className="flex flex-col gap-0.5">
@@ -762,22 +779,7 @@ export default function DoctorProfilePage() {
               </div>
             </div>
 
-            {/* 3. Field of Concentration */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Tag className="w-5 h-5 text-orange-500 shrink-0" />
-                <h2 className="text-base sm:text-lg font-bold text-gray-900">Field of Concentration</h2>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {p.specializations.map((s) => (
-                  <span key={s} className="px-3.5 py-1.5 bg-orange-50 border border-orange-100 text-orange-700 text-xs font-semibold rounded-full hover:bg-orange-100 transition-colors">
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* 4. Chamber Information */}
+            {/* 3. Chamber Information */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
               <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-5">Chamber Information</h2>
               <div className="grid sm:grid-cols-2 gap-4 mb-6">
@@ -833,7 +835,7 @@ export default function DoctorProfilePage() {
               </div>
             </div>
 
-            {/* 5. Tabbed Section */}
+            {/* 4. Tabbed Section */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="flex border-b border-gray-100 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
                 {tabs.map(({ id, label, icon: Icon }) => (
@@ -919,7 +921,7 @@ export default function DoctorProfilePage() {
               </div>
             </div>
 
-            {/* 6. Patient Reviews */}
+            {/* 5. Patient Reviews */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-base sm:text-lg font-bold text-gray-900">Patient Reviews</h2>
