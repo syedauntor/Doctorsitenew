@@ -86,7 +86,7 @@ export default function FeaturedMedicines() {
                 <p className="text-xs text-blue-600 mt-0.5 font-medium">{med.generic}</p>
                 <p className="text-xs text-gray-400 mt-1">{med.manufacturer}</p>
 
-                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-1">
                   <span className="text-base font-bold text-gray-900">৳{med.pricePerUnit}</span>
                   <span className="text-xs text-gray-400">/ unit</span>
                 </div>

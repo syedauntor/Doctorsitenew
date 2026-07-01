@@ -501,11 +501,6 @@ export default function MedicineDetailPage() {
     );
   }
 
-  const hasDiscount = medicine.mrpPerUnit && medicine.mrpPerUnit > medicine.pricePerUnit;
-  const discountPct = hasDiscount
-    ? Math.round(((medicine.mrpPerUnit! - medicine.pricePerUnit) / medicine.mrpPerUnit!) * 100)
-    : 0;
-
   const relatedMedicines = medicines.filter(
     (m) => m.category === medicine.category && m.id !== medicine.id
   ).slice(0, 4);
@@ -563,23 +558,9 @@ export default function MedicineDetailPage() {
                 <span className="text-sm text-gray-500">{medicine.packSize}</span>
               </div>
 
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-green-600">৳{medicine.pricePerUnit}</span>
-                  <span className="text-sm text-gray-400">/ unit</span>
-                  {hasDiscount && (
-                    <span className="text-sm text-gray-400 line-through">৳{medicine.mrpPerUnit}</span>
-                  )}
-                  {hasDiscount && (
-                    <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                      {discountPct}% OFF
-                    </span>
-                  )}
-                </div>
-                <span className="flex items-center gap-1.5 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Available
-                </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-green-600">৳{medicine.pricePerUnit}</span>
+                <span className="text-sm text-gray-400">/ unit</span>
               </div>
             </div>
 

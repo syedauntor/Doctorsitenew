@@ -99,9 +99,6 @@ function MedicineCard({
             <div className="flex items-baseline gap-1 mt-3">
               <span className="text-lg font-bold text-blue-600">৳{medicine.pricePerUnit}</span>
               <span className="text-xs text-gray-400">/ unit</span>
-              {medicine.mrpPerUnit && medicine.mrpPerUnit > medicine.pricePerUnit && (
-                <span className="text-xs text-gray-400 line-through ml-1">৳{medicine.mrpPerUnit}</span>
-              )}
             </div>
           </div>
         </div>
