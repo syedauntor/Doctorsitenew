@@ -4,8 +4,10 @@ import {
   LayoutDashboard, Calendar, Users, Radio, FileText,
   MessageSquare, Star, BarChart2, Settings, Building2,
   CreditCard, LogOut, Menu, X, Stethoscope, ChevronDown,
-  BadgeCheck,
+  BadgeCheck, UserCog,
 } from 'lucide-react';
+
+const DOCTOR_ID = 'DOC-26-00001';
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', to: '/doctor/dashboard' },
@@ -13,6 +15,7 @@ const NAV_ITEMS = [
   { icon: Users, label: 'My Patients', to: '/doctor/patients' },
   { icon: Radio, label: 'Live Queue', to: '/doctor/queue' },
   { icon: FileText, label: 'Prescriptions', to: '/doctor/prescriptions/new' },
+  { icon: UserCog, label: 'My Team', to: '/doctor/team', badge: 2 },
   { icon: MessageSquare, label: 'Q&A', to: '/doctor/qa' },
   { icon: Star, label: 'Reviews', to: '/doctor/reviews' },
   { icon: BarChart2, label: 'Analytics', to: '/doctor/analytics' },
@@ -85,9 +88,15 @@ export default function DoctorLayout({ children }: Props) {
                 <BadgeCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
               </div>
               <p className="text-xs text-gray-500 truncate">Cardiologist</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full font-mono tracking-wide">
+                  <Stethoscope className="w-2.5 h-2.5" />
+                  {DOCTOR_ID}
+                </span>
+              </div>
               <button
                 onClick={() => setOnline(!online)}
-                className={`mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full transition ${
+                className={`mt-1 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full transition ${
                   online ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
                 }`}
               >
@@ -100,7 +109,7 @@ export default function DoctorLayout({ children }: Props) {
 
         {/* Nav items */}
         <nav className="flex-1 overflow-y-auto py-3 px-3">
-          {NAV_ITEMS.map(({ icon: Icon, label, to, soon }) => {
+          {NAV_ITEMS.map(({ icon: Icon, label, to, soon, badge }) => {
             const active = pathname === to || (to !== '/doctor/dashboard' && pathname.startsWith(to));
             return (
               <Link
@@ -119,6 +128,9 @@ export default function DoctorLayout({ children }: Props) {
                 </div>
                 {soon && (
                   <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-200 text-gray-500 rounded-full">Soon</span>
+                )}
+                {badge && !soon && (
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? 'bg-white text-orange-600' : 'bg-orange-500 text-white'}`}>{badge}</span>
                 )}
               </Link>
             );

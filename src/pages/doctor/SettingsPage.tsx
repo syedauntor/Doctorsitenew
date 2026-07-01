@@ -585,6 +585,18 @@ export default function SettingsPage() {
                   <DobAgeInput value={dobAge} onChange={(v) => { setDobAge(v); setDob(v.dob); }} />
                   {dobAge.dob && <p className="text-xs text-green-700 font-semibold mt-1">Age: {formatAgeLong(dobAge.dob)}</p>}
                 </div>
+                {/* Doctor ID read-only */}
+                <div className="sm:col-span-2">
+                  <FieldLabel>Doctor ID</FieldLabel>
+                  <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                    <Stethoscope className="w-5 h-5 text-blue-600 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-lg font-black font-mono text-blue-900 tracking-wider">DOC-26-00001</p>
+                      <p className="text-xs text-blue-500 mt-0.5">Read-only — assigned by the system upon registration</p>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-full uppercase tracking-wide">Verified</span>
+                  </div>
+                </div>
               </div>
               {/* Gender */}
               <div>

@@ -957,6 +957,7 @@ function StepIndicator({ step }: { step: number }) {
 // ─── Success screen ───────────────────────────────────────────────────────────
 
 function SuccessScreen() {
+  const generatedId = 'DOC-26-00013';
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex flex-col">
       <Navbar />
@@ -969,11 +970,26 @@ function SuccessScreen() {
             <span className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-ping opacity-50" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Application Submitted!</h1>
-          <p className="text-gray-500 mb-2 text-base">
+          <p className="text-gray-500 mb-4 text-base">
             Your application is under review. We will verify your BMDC registration and contact you within <strong>48 hours</strong>.
           </p>
-          <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 text-sm font-mono px-4 py-2 rounded-full mt-2 mb-8">
-            Reference: <span className="font-bold text-gray-900">#DOC-2024-001</span>
+
+          {/* Doctor ID display */}
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-5 mb-6 text-left space-y-3">
+            <p className="text-xs font-bold text-blue-600 uppercase tracking-wide">Your Doctor ID</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                <Stethoscope className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-black font-mono text-blue-900 tracking-wider">{generatedId}</p>
+                <p className="text-xs text-blue-600 mt-0.5">Keep this ID safe — share it with your PS staff</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 text-sm font-mono px-4 py-2 rounded-full mb-8">
+            Reference: <span className="font-bold text-gray-900">#REF-2026-013</span>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link

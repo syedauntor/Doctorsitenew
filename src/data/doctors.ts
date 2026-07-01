@@ -64,6 +64,7 @@ export interface Doctor {
   verified: boolean;
   image: string;
   queue: number;
+  doctorId: string;
   bmdcVerified?: boolean;
   identityVerified?: boolean;
   chamberVerified?: boolean;
@@ -101,6 +102,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 4,
+    doctorId: 'DOC-26-00001',
     bmdcVerified: true,
     identityVerified: true,
     chamberVerified: true,
@@ -159,6 +161,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 7,
+    doctorId: 'DOC-26-00002',
     bmdcVerified: true,
     identityVerified: true,
     chamberVerified: false,
@@ -251,6 +254,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5214958/pexels-photo-5214958.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 0,
+    doctorId: 'DOC-26-00003',
     profile: {
       slug: 'dr-nasrin-sultana',
       bio: 'Dr. Nasrin Sultana is a compassionate Pediatrician with 12 years of experience caring for children from newborns to adolescents. She is dedicated to preventive care, early diagnosis, and working closely with families to ensure the healthiest outcomes for every child.',
@@ -305,6 +309,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/4253089/pexels-photo-4253089.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 3,
+    doctorId: 'DOC-26-00004',
     profile: {
       slug: 'dr-rezaul-karim',
       bio: 'Dr. Rezaul Karim is a senior Orthopedic Surgeon with 20 years of clinical expertise in joint replacement, spine surgery, and sports injuries. He has pioneered minimally invasive surgical techniques in Bangladesh and trained over 50 orthopedic surgeons.',
@@ -359,6 +364,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 2,
+    doctorId: 'DOC-26-00005',
     profile: {
       slug: 'dr-tasneem-akter',
       bio: 'Dr. Tasneem Akter is a specialist Dermatologist focused on medical and cosmetic dermatology. With 10 years of experience, she treats a wide spectrum of skin, hair, and nail conditions, using evidence-based therapies combined with the latest aesthetic treatments.',
@@ -413,6 +419,7 @@ export const doctors: Doctor[] = [
     verified: false,
     image: 'https://images.pexels.com/photos/5215024/pexels-photo-5215024.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 5,
+    doctorId: 'DOC-26-00006',
     profile: {
       slug: 'dr-imtiaz-ahmed',
       bio: 'Dr. Imtiaz Ahmed is an experienced General Physician and Internal Medicine specialist. His 14-year practice covers a broad range of acute and chronic conditions, with a particular focus on diabetes, hypertension, and preventive health management for patients of all ages.',
@@ -465,6 +472,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 0,
+    doctorId: 'DOC-26-00007',
     profile: {
       slug: 'dr-sumaiya-islam',
       bio: 'Dr. Sumaiya Islam is a highly respected Gynecologist and Obstetrician with 16 years of expertise in women\'s health. She specializes in high-risk pregnancies, minimally invasive gynecological surgery, and comprehensive reproductive health care.',
@@ -519,6 +527,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 8,
+    doctorId: 'DOC-26-00008',
     profile: {
       slug: 'dr-kamal-uddin',
       bio: 'Dr. Kamal Uddin is a veteran Ophthalmologist with 22 years of experience in managing all forms of eye disease. He has performed over 5,000 cataract surgeries and is a pioneer in phacoemulsification technique in Bangladesh, restoring vision for thousands of patients.',
@@ -573,6 +582,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5407215/pexels-photo-5407215.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 0,
+    doctorId: 'DOC-26-00009',
     profile: {
       slug: 'dr-roksana-begum',
       bio: 'Dr. Roksana Begum is a senior Cardiologist and academic researcher with a PhD in Cardiac Physiology. Her 24-year career spans clinical practice, research, and teaching. She has published over 40 research papers and contributes to international cardiology guidelines.',
@@ -627,6 +637,7 @@ export const doctors: Doctor[] = [
     verified: false,
     image: 'https://images.pexels.com/photos/5327656/pexels-photo-5327656.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 1,
+    doctorId: 'DOC-26-00010',
     profile: {
       slug: 'dr-ariful-islam',
       bio: 'Dr. Ariful Islam is a dedicated General Physician who combines clinical practice with a strong public health background. His 8 years of experience in community and hospital settings make him particularly effective at managing common illnesses and guiding patients toward healthier lifestyles.',
@@ -680,6 +691,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5215013/pexels-photo-5215013.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 6,
+    doctorId: 'DOC-26-00011',
     profile: {
       slug: 'dr-sharmin-nahar',
       bio: 'Dr. Sharmin Nahar is a clinical and cosmetic Dermatologist with 13 years of experience. She has a special interest in dermatological surgery, skin cancer screening, and advanced anti-aging treatments, combining medical expertise with aesthetic sensibility.',
@@ -734,6 +746,7 @@ export const doctors: Doctor[] = [
     verified: true,
     image: 'https://images.pexels.com/photos/5327921/pexels-photo-5327921.jpeg?auto=compress&cs=tinysrgb&w=800',
     queue: 0,
+    doctorId: 'DOC-26-00012',
     profile: {
       slug: 'dr-tanvir-hasan',
       bio: 'Dr. Tanvir Hasan is one of Bangladesh\'s foremost Neurologists, with 19 years of experience in advanced neuroscience and clinical practice. An MRCP holder from the UK, he specializes in complex movement disorders, neuromuscular diseases, and cutting-edge neuromodulation therapies.',

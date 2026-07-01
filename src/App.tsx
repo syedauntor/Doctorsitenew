@@ -15,6 +15,7 @@ import NewPrescriptionPage from './pages/doctor/NewPrescriptionPage';
 import SettingsPage from './pages/doctor/SettingsPage';
 import AnalyticsPage from './pages/doctor/AnalyticsPage';
 import PatientsPage from './pages/doctor/PatientsPage';
+import TeamPage from './pages/doctor/TeamPage';
 import PSDashboardPage from './pages/ps/DashboardPage';
 import PSQueuePage from './pages/ps/QueuePage';
 import PSAppointmentsPage from './pages/ps/AppointmentsPage';
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/doctor/settings" element={<SettingsPage />} />
         <Route path="/doctor/analytics" element={<AnalyticsPage />} />
         <Route path="/doctor/patients" element={<PatientsPage />} />
+        <Route path="/doctor/team" element={<TeamPage />} />
         {/* PS portal */}
         <Route path="/ps/dashboard" element={<PSDashboardPage />} />
         <Route path="/ps/queue" element={<PSQueuePage />} />
