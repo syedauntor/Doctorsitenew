@@ -20,18 +20,91 @@ const CATEGORY_BADGE: Record<string, string> = {
   Inhaler:   'bg-orange-100 text-orange-700',
 };
 
-const ICON_BG: Record<string, string> = {
-  Tablet:    'bg-blue-100 text-blue-600',
-  Capsule:   'bg-amber-100 text-amber-600',
-  Syrup:     'bg-yellow-100 text-yellow-600',
-  Injection: 'bg-red-100 text-red-600',
-  Cream:     'bg-green-100 text-green-600',
-  'Eye Drop':'bg-cyan-100 text-cyan-600',
-  Inhaler:   'bg-orange-100 text-orange-600',
-};
-
 const TABS = ['Overview', 'Dosage', 'Side Effects', 'Interactions', 'Storage'] as const;
 type Tab = typeof TABS[number];
+
+// Placeholder image set per category (label + which icon variant to show)
+const THUMB_LABELS = ['Front', 'Back', 'Strip', 'Close-up'] as const;
+
+const ICON_COLOR_MAP: Record<string, string> = {
+  Tablet:    '#2563EB',
+  Capsule:   '#D97706',
+  Syrup:     '#CA8A04',
+  Injection: '#DC2626',
+  Cream:     '#16A34A',
+  'Eye Drop':'#0891B2',
+  Inhaler:   '#EA580C',
+};
+
+function MedicineImageGallery({ category, name }: { category: string; name: string }) {
+  const [activeThumb, setActiveThumb] = useState(0);
+  const color = ICON_COLOR_MAP[category] ?? '#6B7280';
+  const bgLight = `${color}12`;
+
+  return (
+    <div className="mb-6">
+      {/* Main image display */}
+      <div
+        className="w-full rounded-2xl flex items-center justify-center relative overflow-hidden"
+        style={{ height: '300px', backgroundColor: '#F3F4F6' }}
+      >
+        {/* Category watermark */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none">
+          <Pill className="w-64 h-64" style={{ color }} />
+        </div>
+
+        {/* Main visual */}
+        <div className="flex flex-col items-center gap-4 z-10">
+          <div
+            className="w-28 h-28 rounded-2xl flex items-center justify-center shadow-sm"
+            style={{ backgroundColor: bgLight, border: `2px solid ${color}22` }}
+          >
+            <Pill className="w-14 h-14" style={{ color }} />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-bold text-gray-700">{name}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{THUMB_LABELS[activeThumb]} view</p>
+          </div>
+        </div>
+
+        {/* View label badge */}
+        <div className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm text-xs font-semibold text-gray-600 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm">
+          {THUMB_LABELS[activeThumb]}
+        </div>
+      </div>
+
+      {/* Thumbnail row */}
+      <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        {THUMB_LABELS.map((label, i) => (
+          <button
+            key={label}
+            onClick={() => setActiveThumb(i)}
+            className={`shrink-0 rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all duration-150 border-2 ${
+              activeThumb === i
+                ? 'border-blue-500 bg-blue-50 shadow-sm'
+                : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+            }`}
+            style={{ width: 80, height: 80 }}
+            title={`${label} view`}
+          >
+            <Pill
+              className="w-7 h-7"
+              style={{ color: activeThumb === i ? '#2563EB' : color, opacity: activeThumb === i ? 1 : 0.5 }}
+            />
+            <span className={`text-[10px] font-semibold ${activeThumb === i ? 'text-blue-600' : 'text-gray-400'}`}>
+              {label}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Caption */}
+      <p className="text-[11px] text-gray-400 italic text-center mt-2 leading-snug">
+        Image for illustration only. Actual product may vary.
+      </p>
+    </div>
+  );
+}
 
 function CollapsibleSection({ title, children }: { title: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -470,57 +543,50 @@ export default function MedicineDetailPage() {
 
             {/* Top Card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex items-start gap-5">
-                {/* Medicine icon */}
-                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 ${ICON_BG[medicine.category] ?? 'bg-gray-100 text-gray-500'}`}>
-                  <Pill className="w-10 h-10" />
+              {/* Image gallery — full width at top */}
+              <MedicineImageGallery category={medicine.category} name={medicine.name} />
+
+              {/* Medicine name + details below gallery */}
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 leading-tight">{medicine.name}</h1>
+                  <p className="text-base font-medium text-blue-600 mt-1">{medicine.generic}</p>
                 </div>
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-full shrink-0 ${CATEGORY_BADGE[medicine.category]}`}>
+                  {medicine.category}
+                </span>
+              </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div>
-                      <h1 className="text-2xl font-bold text-gray-900 leading-tight">{medicine.name}</h1>
-                      <p className="text-base font-medium text-blue-600 mt-1">{medicine.generic}</p>
-                    </div>
-                    <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${CATEGORY_BADGE[medicine.category]}`}>
-                      {medicine.category}
+              {/* Manufacturer */}
+              <div className="flex items-center gap-2 mb-1">
+                <Flag className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-sm text-gray-600">{medicine.countryFlag} {medicine.manufacturer}</span>
+              </div>
+
+              {/* Pack size */}
+              <div className="flex items-center gap-2 mb-4">
+                <Package className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-sm text-gray-500">{medicine.packSize}</span>
+              </div>
+
+              {/* Price row */}
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-green-600">৳{medicine.pricePerUnit}</span>
+                  <span className="text-sm text-gray-400">/ unit</span>
+                  {hasDiscount && (
+                    <span className="text-sm text-gray-400 line-through">৳{medicine.mrpPerUnit}</span>
+                  )}
+                  {hasDiscount && (
+                    <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                      {discountPct}% OFF
                     </span>
-                  </div>
-
-                  {/* Manufacturer */}
-                  <div className="flex items-center gap-2 mt-3">
-                    <Flag className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-sm text-gray-600">{medicine.countryFlag} {medicine.manufacturer}</span>
-                  </div>
-
-                  {/* Pack size */}
-                  <div className="flex items-center gap-2 mt-1">
-                    <Package className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-sm text-gray-500">{medicine.packSize}</span>
-                  </div>
-
-                  {/* Price row */}
-                  <div className="flex items-center gap-4 mt-4 flex-wrap">
-                    <div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-green-600">৳{medicine.pricePerUnit}</span>
-                        <span className="text-sm text-gray-400">/ unit</span>
-                        {hasDiscount && (
-                          <span className="text-sm text-gray-400 line-through">৳{medicine.mrpPerUnit}</span>
-                        )}
-                        {hasDiscount && (
-                          <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                            {discountPct}% OFF
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <span className="flex items-center gap-1.5 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-full">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                      Available
-                    </span>
-                  </div>
+                  )}
                 </div>
+                <span className="flex items-center gap-1.5 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  Available
+                </span>
               </div>
             </div>
 
