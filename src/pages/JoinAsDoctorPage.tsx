@@ -6,6 +6,7 @@ import {
   BadgeCheck, Users, Calendar, FileText, Wifi,
   Phone, Mail, HeartPulse, Star, ArrowRight,
 } from 'lucide-react';
+import DobAgeInput, { type DobAgeValue, formatAgeLong } from '../components/DobAgeInput';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -57,6 +58,7 @@ interface FormData {
   profilePhotoPreview: string;
   gender: string;
   dob: string;
+  dobAge: DobAgeValue;
   nid: string;
   // Step 2
   degree: string;
@@ -85,7 +87,7 @@ function defaultChamber(): Chamber {
 
 const initialForm: FormData = {
   fullName: '', email: '', phone: '', password: '', confirmPassword: '',
-  profilePhoto: null, profilePhotoPreview: '', gender: '', dob: '', nid: '',
+  profilePhoto: null, profilePhotoPreview: '', gender: '', dob: '', dobAge: { dob: '', ageManual: '' }, nid: '',
   degree: '', additionalDegrees: '', specialty: '', bmdcNumber: '',
   bmdcCertificate: null, experience: '', hospital: '',
   concentrationTags: [], bio: '',
@@ -206,12 +208,12 @@ function Step1({ form, setForm }: { form: FormData; setForm: (f: FormData) => vo
             onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
           />
         </div>
-        <div>
-          <FieldLabel required>Date of Birth</FieldLabel>
-          <Input
-            type="date"
-            value={form.dob}
-            onChange={(e) => setForm({ ...form, dob: e.target.value })}
+        <div className="sm:col-span-2">
+          <FieldLabel required>Date of Birth / Age</FieldLabel>
+          <DobAgeInput
+            value={form.dobAge}
+            onChange={(v) => setForm({ ...form, dobAge: v, dob: v.dob })}
+            required
           />
         </div>
         <div>

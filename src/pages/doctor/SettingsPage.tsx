@@ -6,6 +6,7 @@ import {
   MessageSquare, Edit2, Trash2, Users, Phone,
 } from 'lucide-react';
 import DoctorLayout from '../../components/DoctorLayout';
+import DobAgeInput, { type DobAgeValue, formatAgeLong } from '../../components/DobAgeInput';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -461,6 +462,7 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState('1712345678');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
   const [dob, setDob] = useState('1982-05-15');
+  const [dobAge, setDobAge] = useState<DobAgeValue>({ dob: '1982-05-15', ageManual: '' });
   const [bio, setBio] = useState('Experienced Cardiologist with over 12 years of practice.');
   const [longBio, setLongBio] = useState('Dr. Rahim Uddin is a distinguished Cardiologist with over 12 years of experience in the management of complex cardiovascular conditions. He completed his MBBS from Dhaka Medical College and his MD in Cardiology from NICVD. He has trained at leading cardiac centres in India and the UK. He is known for his patient-centred approach and evidence-based practice. He currently practices at Green Life Medical Centre, Dhanmondi.');
   const [languages, setLanguages] = useState(['Bangla', 'English']);
@@ -578,7 +580,11 @@ export default function SettingsPage() {
                 <div><FieldLabel>Full Name</FieldLabel><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
                 <div><FieldLabel>Email</FieldLabel><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                 <div><FieldLabel>Phone</FieldLabel><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
-                <div><FieldLabel>Date of Birth</FieldLabel><Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} /></div>
+                <div className="sm:col-span-2">
+                  <FieldLabel>Date of Birth / Age</FieldLabel>
+                  <DobAgeInput value={dobAge} onChange={(v) => { setDobAge(v); setDob(v.dob); }} />
+                  {dobAge.dob && <p className="text-xs text-green-700 font-semibold mt-1">Age: {formatAgeLong(dobAge.dob)}</p>}
+                </div>
               </div>
               {/* Gender */}
               <div>

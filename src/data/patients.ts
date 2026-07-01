@@ -9,7 +9,7 @@ export interface VisitEntry {
 export interface PatientData {
   id: number;
   patientId: string;
-  name: string; age: number; gender: 'M' | 'F';
+  name: string; age: number; dob?: string; gender: 'M' | 'F';
   phone: string; email: string; bloodGroup: string;
   regType: 'Online' | 'Walk-in';
   firstVisit: string; lastVisit: string; totalVisits: number; lastDiagnosis: string;

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Trash2, Eye, Download, Search, Save, ChevronDown, X } from 'lucide-react';
 import DoctorLayout from '../../components/DoctorLayout';
 import { PATIENTS } from '../../data/patients';
+import { formatAgeLong, formatAgeShort } from '../../components/DobAgeInput';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -142,7 +143,10 @@ export default function NewPrescriptionPage() {
                     <span className="text-sm font-bold text-gray-900">{selectedPatient.name}</span>
                     <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{selectedPatient.patientId}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">{selectedPatient.age}y · {selectedPatient.gender === 'M' ? 'Male' : 'Female'} · {selectedPatient.bloodGroup}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {selectedPatient.dob ? formatAgeLong(selectedPatient.dob) : `${selectedPatient.age}y (approx)`}
+                    {' · '}{selectedPatient.gender === 'M' ? 'Male' : 'Female'} · {selectedPatient.bloodGroup}
+                  </p>
                   {selectedPatient.knownConditions.length > 0 && (
                     <p className="text-xs text-orange-600 font-semibold mt-0.5">{selectedPatient.knownConditions.join(' · ')}</p>
                   )}
@@ -172,7 +176,10 @@ export default function NewPrescriptionPage() {
                           <p className="text-sm font-semibold text-gray-800">{p.name}</p>
                           <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{p.patientId}</span>
                         </div>
-                        <p className="text-xs text-gray-400">{p.age}y · {p.gender === 'M' ? 'Male' : 'Female'} · {p.bloodGroup}</p>
+                        <p className="text-xs text-gray-400">
+                          {p.dob ? formatAgeShort({ dob: p.dob, ageManual: '' }) : `${p.age}y (approx)`}
+                          {' · '}{p.gender === 'M' ? 'Male' : 'Female'} · {p.bloodGroup}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -495,7 +502,9 @@ export default function NewPrescriptionPage() {
             {selectedPatient && (
               <div className="mb-3 flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{selectedPatient.patientId}</span>
-                <span className="text-sm font-semibold text-gray-700">{selectedPatient.name} · {selectedPatient.age}y · {selectedPatient.gender === 'M' ? 'Male' : 'Female'}</span>
+                <span className="text-sm font-semibold text-gray-700">
+                  {selectedPatient.name} · {selectedPatient.dob ? formatAgeLong(selectedPatient.dob) : `${selectedPatient.age}y (approx.)`} · {selectedPatient.gender === 'M' ? 'Male' : 'Female'}
+                </span>
                 {bpSys && bpDia && <span className="text-xs text-gray-500">BP: {bpSys}/{bpDia}</span>}
                 {pulse && <span className="text-xs text-gray-500">PR: {pulse}</span>}
                 {weight && <span className="text-xs text-gray-500">Wt: {weight}kg</span>}
