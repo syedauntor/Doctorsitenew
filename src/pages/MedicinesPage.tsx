@@ -11,6 +11,7 @@ import {
   medicines, MEDICINE_CATEGORIES, CATEGORY_COUNTS,
   MANUFACTURERS, POPULAR_TAGS, type Medicine,
 } from '../data/medicines';
+import MedicinePriceDisplay from '../components/MedicinePriceDisplay';
 
 const SORT_OPTIONS = [
   { value: 'name-asc', label: 'Name A–Z' },
@@ -96,9 +97,8 @@ function MedicineCard({
             <p className="text-xs text-gray-400 mt-1">{medicine.countryFlag} {medicine.manufacturer}</p>
             <p className="text-xs text-gray-400 mt-0.5">{medicine.packSize}</p>
 
-            <div className="flex items-baseline gap-1 mt-3">
-              <span className="text-lg font-bold text-blue-600">৳{medicine.pricePerUnit}</span>
-              <span className="text-xs text-gray-400">/ unit</span>
+            <div className="mt-3">
+              <MedicinePriceDisplay medicine={medicine} unitSize="sm" />
             </div>
           </div>
         </div>

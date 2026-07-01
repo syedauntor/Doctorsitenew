@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import MedicinePriceDisplay from '../components/MedicinePriceDisplay';
 import { medicines, type Medicine } from '../data/medicines';
 
 const CATEGORY_BADGE: Record<string, string> = {
@@ -558,9 +559,8 @@ export default function MedicineDetailPage() {
                 <span className="text-sm text-gray-500">{medicine.packSize}</span>
               </div>
 
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-green-600">৳{medicine.pricePerUnit}</span>
-                <span className="text-sm text-gray-400">/ unit</span>
+              <div className="mt-4">
+                <MedicinePriceDisplay medicine={medicine} unitSize="lg" />
               </div>
             </div>
 
@@ -618,15 +618,9 @@ export default function MedicineDetailPage() {
                   { label: 'Manufacturer', value: medicine.manufacturer },
                   { label: 'Pack Size', value: medicine.packSize },
                   { label: 'Price / Unit', value: `৳${medicine.pricePerUnit}` },
-                  {
-                    label: 'Price / Pack',
-                    value: `৳${(medicine.pricePerUnit * parseInt(medicine.packSize)).toFixed(0) !== 'NaN'
-                      ? (() => {
-                          const match = medicine.packSize.match(/^(\d+)/);
-                          return match ? (medicine.pricePerUnit * parseInt(match[1])).toFixed(2) : '—';
-                        })()
-                      : '—'}`,
-                  },
+                  ...(medicine.pricePerPack != null
+                    ? [{ label: 'Price / Pack', value: `৳${medicine.pricePerPack}` }]
+                    : []),
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-start justify-between gap-2">
                     <dt className="text-xs text-gray-400 shrink-0">{label}</dt>

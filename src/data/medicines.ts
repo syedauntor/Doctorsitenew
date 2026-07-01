@@ -17,6 +17,7 @@ export interface Medicine {
   countryFlag: string;
   category: MedicineCategory;
   pricePerUnit: number;
+  pricePerPack?: number;
   mrpPerUnit?: number;
   packSize: string;
   uses: string[];
@@ -70,6 +71,7 @@ export const medicines: Medicine[] = [
     countryFlag: '🇧🇩',
     category: 'Tablet',
     pricePerUnit: 0.82,
+    pricePerPack: 8.20,
     mrpPerUnit: 1.0,
     packSize: '10 tablets per strip',
     uses: [
@@ -105,6 +107,7 @@ export const medicines: Medicine[] = [
     countryFlag: '🇧🇩',
     category: 'Tablet',
     pricePerUnit: 45,
+    pricePerPack: 135,
     mrpPerUnit: 50,
     packSize: '3 tablets per pack',
     uses: [
@@ -175,6 +178,7 @@ export const medicines: Medicine[] = [
     countryFlag: '🇧🇩',
     category: 'Tablet',
     pricePerUnit: 3.5,
+    pricePerPack: 105,
     mrpPerUnit: 4,
     packSize: '30 tablets per pack',
     uses: [
