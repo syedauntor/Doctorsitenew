@@ -1,9 +1,14 @@
 import { Stethoscope, Phone, Mail, MapPin, Facebook, Twitter, Youtube } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const footerLinks = {
   'Quick Links': ['Find Doctors', 'Search Medicines', 'MCQ Practice', 'Q&A Forum'],
   'For Doctors': ['Join as Doctor', 'Doctor Dashboard', 'Manage Schedule', 'Patient Records'],
   'Support': ['Help Center', 'Terms of Service', 'Privacy Policy', 'Contact Us'],
+};
+
+const footerHrefs: Record<string, string> = {
+  'Join as Doctor': '/join-as-doctor',
 };
 
 export default function Footer() {
@@ -47,9 +52,18 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link}>
-                    <a href="#" className="text-sm text-gray-400 hover:text-blue-400 transition-colors duration-150">
-                      {link}
-                    </a>
+                    {footerHrefs[link] ? (
+                      <Link
+                        to={footerHrefs[link]}
+                        className="text-sm text-gray-400 hover:text-blue-400 transition-colors duration-150"
+                      >
+                        {link}
+                      </Link>
+                    ) : (
+                      <a href="#" className="text-sm text-gray-400 hover:text-blue-400 transition-colors duration-150">
+                        {link}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
