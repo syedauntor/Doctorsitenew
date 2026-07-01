@@ -43,6 +43,8 @@ function toCardData(d: Doctor) {
     reviews: d.reviews,
     experience: d.experience,
     availableToday: d.availableToday,
+    bookingEnabled: d.bookingEnabled,
+    queueActive: d.queueActive,
     verified: !!d.verified,
     image: d.image,
     queue: d.queue,

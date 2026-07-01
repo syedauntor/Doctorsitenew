@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Star, Clock, Users, Calendar, CheckCircle, Heart } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, Star, Clock, Users, Calendar, CheckCircle, Heart, ChevronRight } from 'lucide-react';
 
 export interface DoctorCardData {
   id: number;
@@ -13,6 +13,8 @@ export interface DoctorCardData {
   reviews: number;
   experience: number;
   availableToday: boolean;
+  bookingEnabled: boolean;
+  queueActive: boolean;
   verified: boolean;
   image: string;
   queue: number;
@@ -21,12 +23,17 @@ export interface DoctorCardData {
 
 export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
   const [saved, setSaved] = useState(false);
+  const navigate = useNavigate();
   const href = `/doctors/${doctor.slug ?? doctor.id}`;
+
+  // Smart button logic
+  const canBook = doctor.availableToday && doctor.bookingEnabled;
+  const isQueueActive = doctor.availableToday && doctor.queueActive;
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
 
-      {/* ── Photo ── */}
+      {/* Photo */}
       <div className="relative h-[220px] overflow-hidden shrink-0 bg-gray-100">
         <img
           src={doctor.image}
@@ -34,7 +41,6 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
           className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
 
-        {/* Dark gradient overlay at bottom */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
 
         {/* Verified — top left */}
@@ -49,7 +55,7 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
           </div>
         )}
 
-        {/* Heart — top right only */}
+        {/* Heart — top right */}
         <button
           onClick={(e) => { e.preventDefault(); setSaved((v) => !v); }}
           className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/85 backdrop-blur-sm shadow hover:bg-white transition-colors"
@@ -57,7 +63,7 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
           <Heart className={`w-4 h-4 transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
         </button>
 
-        {/* Availability — bottom left on gradient */}
+        {/* Availability — bottom left */}
         <div className="absolute bottom-3 left-3">
           {doctor.availableToday ? (
             <div className="flex items-center gap-1.5 bg-green-600/90 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1.5 rounded-full shadow-md">
@@ -75,7 +81,7 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
         </div>
       </div>
 
-      {/* ── Info ── */}
+      {/* Info */}
       <div className="p-4 flex flex-col flex-1 gap-3">
 
         {/* Name + specialty + degrees */}
@@ -114,7 +120,7 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
             <p className="text-[18px] font-extrabold text-gray-900 leading-none">৳ {doctor.fee.toLocaleString()}</p>
           </div>
           <div className="text-right">
-            {doctor.availableToday ? (
+            {isQueueActive ? (
               <>
                 <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Live Queue</p>
                 <div className="flex items-center justify-end gap-1">
@@ -126,28 +132,53 @@ export default function DoctorCard({ doctor }: { doctor: DoctorCardData }) {
               </>
             ) : (
               <span className="text-[11px] text-gray-400 font-semibold bg-gray-100 px-2.5 py-1 rounded-full">
-                Not available
+                {doctor.availableToday ? 'Queue inactive' : 'Not available'}
               </span>
             )}
           </div>
         </div>
 
-        {/* Buttons */}
+        {/* Smart Buttons */}
         <div className="flex flex-col gap-2 mt-auto">
-          <Link
-            to={href}
-            className="w-full py-3 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl active:scale-95 transition-all duration-150 flex items-center justify-center gap-2 shadow-sm shadow-blue-200"
-          >
-            <Calendar className="w-4 h-4" />
-            Book Appointment
-          </Link>
-          <button
-            disabled={!doctor.availableToday}
-            className="w-full py-3 min-h-[44px] border-2 border-green-500 text-green-600 text-sm font-bold rounded-xl hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-          >
-            <Users className="w-4 h-4" />
-            Live Queue
-          </button>
+
+          {/* Primary: Book Appointment (blue) OR View Profile (gray outlined) */}
+          {canBook ? (
+            <Link
+              to={`${href}?booking=1`}
+              className="w-full py-3 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl active:scale-95 transition-all duration-150 flex items-center justify-center gap-2 shadow-sm shadow-blue-200"
+            >
+              <Calendar className="w-4 h-4" />
+              Book Appointment
+            </Link>
+          ) : (
+            <Link
+              to={href}
+              className="w-full py-3 min-h-[44px] border-2 border-gray-200 text-gray-600 text-sm font-bold rounded-xl hover:border-gray-300 hover:bg-gray-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
+            >
+              <ChevronRight className="w-4 h-4" />
+              View Profile
+            </Link>
+          )}
+
+          {/* Secondary: Live Queue */}
+          {isQueueActive ? (
+            <button
+              onClick={() => navigate(`/queue/${doctor.id}`)}
+              className="w-full py-3 min-h-[44px] border-2 border-green-500 text-green-600 text-sm font-bold rounded-xl hover:bg-green-50 active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Live Queue
+            </button>
+          ) : (
+            <button
+              disabled
+              className="w-full py-3 min-h-[44px] border-2 border-gray-200 text-gray-400 text-sm font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed"
+            >
+              <Users className="w-4 h-4" />
+              Live Queue
+            </button>
+          )}
+
         </div>
 
       </div>
