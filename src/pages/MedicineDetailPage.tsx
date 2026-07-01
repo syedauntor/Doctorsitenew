@@ -46,7 +46,7 @@ function MedicineImageGallery({ category, name }: { category: string; name: stri
       {/* Main image display */}
       <div
         className="w-full rounded-2xl flex items-center justify-center relative overflow-hidden"
-        style={{ height: '300px', backgroundColor: '#F3F4F6' }}
+        style={{ height: '250px', backgroundColor: '#F3F4F6' }}
       >
         {/* Category watermark */}
         <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none">
@@ -541,12 +541,8 @@ export default function MedicineDetailPage() {
           {/* ── LEFT COLUMN (65%) ── */}
           <div className="flex-1 min-w-0 space-y-5">
 
-            {/* Top Card */}
+            {/* 1. Medicine Header Card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              {/* Image gallery — full width at top */}
-              <MedicineImageGallery category={medicine.category} name={medicine.name} />
-
-              {/* Medicine name + details below gallery */}
               <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 leading-tight">{medicine.name}</h1>
@@ -557,19 +553,16 @@ export default function MedicineDetailPage() {
                 </span>
               </div>
 
-              {/* Manufacturer */}
               <div className="flex items-center gap-2 mb-1">
                 <Flag className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-sm text-gray-600">{medicine.countryFlag} {medicine.manufacturer}</span>
               </div>
 
-              {/* Pack size */}
               <div className="flex items-center gap-2 mb-4">
                 <Package className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-sm text-gray-500">{medicine.packSize}</span>
               </div>
 
-              {/* Price row */}
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-bold text-green-600">৳{medicine.pricePerUnit}</span>
@@ -590,9 +583,8 @@ export default function MedicineDetailPage() {
               </div>
             </div>
 
-            {/* Tabs */}
+            {/* 2. Tabs Section */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              {/* Tab bar */}
               <div className="flex items-center border-b border-gray-100 overflow-x-auto scrollbar-hide">
                 {TABS.map((tab) => (
                   <button
@@ -608,8 +600,6 @@ export default function MedicineDetailPage() {
                   </button>
                 ))}
               </div>
-
-              {/* Tab content */}
               <div className="p-6">
                 {activeTab === 'Overview' && <OverviewTab medicine={medicine} />}
                 {activeTab === 'Dosage' && <DosageTab medicine={medicine} />}
@@ -619,7 +609,16 @@ export default function MedicineDetailPage() {
               </div>
             </div>
 
-            {/* Available Brands */}
+            {/* 3. Image Gallery Section */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <Pill className="w-4 h-4 text-blue-500" />
+                Product Images
+              </h3>
+              <MedicineImageGallery category={medicine.category} name={medicine.name} />
+            </div>
+
+            {/* 4. Other Brands Section */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <AvailableBrandsSection medicine={medicine} allMedicines={medicines} />
             </div>
