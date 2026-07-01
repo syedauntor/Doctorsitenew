@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 const navLinks = [
   { label: 'Doctors', to: '/doctors' },
   { label: 'Medicines', to: '/medicines' },
-  { label: 'MCQ', to: '/#mcq' },
-  { label: 'Q&A', to: '/#qa' },
+  { label: 'MCQ', to: '/mcqs' },
+  { label: 'Q&A', to: '/questions' },
 ];
 
 export default function Navbar() {
@@ -41,18 +41,18 @@ export default function Navbar() {
 
           {/* Desktop auth buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <a
-              href="#login"
+            <Link
+              to="/login"
               className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-150"
             >
               Login
-            </a>
-            <a
-              href="#register"
+            </Link>
+            <Link
+              to="/register"
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-150"
             >
               Register
-            </a>
+            </Link>
           </div>
 
           {/* Mobile toggle */}
@@ -80,18 +80,20 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="mt-3 flex flex-col gap-2">
-            <a
-              href="#login"
+            <Link
+              to="/login"
+              onClick={() => setMobileOpen(false)}
               className="block text-center px-4 py-2.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
             >
               Login
-            </a>
-            <a
-              href="#register"
+            </Link>
+            <Link
+              to="/register"
+              onClick={() => setMobileOpen(false)}
               className="block text-center px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Register
-            </a>
+            </Link>
           </div>
         </div>
       )}
