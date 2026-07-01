@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   User, Stethoscope, Building2, CalendarOff, Settings,
   Bell, ShieldCheck, Star, Plus, X, Save, Wifi,
   AlertTriangle, BadgeCheck, Clock, Flag,
-  MessageSquare, Edit2, Trash2, ChevronDown,
+  MessageSquare, Edit2, Trash2, Users, Phone,
 } from 'lucide-react';
 import DoctorLayout from '../../components/DoctorLayout';
 
@@ -18,11 +18,14 @@ const TABS_LIST = [
   { id: 'professional',   label: 'Professional',       icon: Stethoscope },
   { id: 'verification',   label: 'Verification',       icon: ShieldCheck },
   { id: 'chamber',        label: 'Chamber Settings',   icon: Building2 },
+  { id: 'myteam',         label: 'My Team',            icon: Users },
   { id: 'availability',   label: 'Availability',       icon: CalendarOff },
   { id: 'booking',        label: 'Booking Settings',   icon: Settings },
   { id: 'notifications',  label: 'Notifications',      icon: Bell },
   { id: 'reviews',        label: 'Reviews & Q&A',      icon: Star },
 ];
+
+interface PSMember { id: number; name: string; phone: string; email: string; chambers: string[]; active: boolean; permissions: { queue: boolean; appointments: boolean; prescriptions: boolean; register: boolean; history: boolean } }
 
 interface DaySchedule { day: string; active: boolean; open: string; close: string; maxPatients: string }
 interface ChamberAvailability {
@@ -290,6 +293,159 @@ function ChamberAvailabilityPanel({ avail, onChange }: { avail: ChamberAvailabil
           </>)}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── My Team Tab ──────────────────────────────────────────────────────────────
+
+const DEFAULT_PERMISSIONS = { queue: true, appointments: true, prescriptions: true, register: true, history: false };
+
+function MyTeamTab({ chambers }: { chambers: { id: string; name: string }[] }) {
+  const [members, setMembers] = useState<PSMember[]>([
+    { id: 1, name: 'Ratan Kumar', phone: '01712345678', email: 'ratan@example.com', chambers: ['ch1', 'ch2'], active: true, permissions: { queue: true, appointments: true, prescriptions: true, register: true, history: false } },
+  ]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ name: '', phone: '', email: '', chambers: [] as string[], permissions: { ...DEFAULT_PERMISSIONS } });
+
+  const toggleChamber = (id: string) => setForm((f) => ({ ...f, chambers: f.chambers.includes(id) ? f.chambers.filter((c) => c !== id) : [...f.chambers, id] }));
+  const togglePerm = (key: keyof typeof DEFAULT_PERMISSIONS) => setForm((f) => ({ ...f, permissions: { ...f.permissions, [key]: !f.permissions[key] } }));
+
+  const addMember = () => {
+    if (!form.name.trim() || !form.phone.trim()) return;
+    setMembers((m) => [...m, { id: Date.now(), ...form, active: true }]);
+    setForm({ name: '', phone: '', email: '', chambers: [], permissions: { ...DEFAULT_PERMISSIONS } });
+    setShowAdd(false);
+  };
+
+  const PERM_LABELS: { key: keyof typeof DEFAULT_PERMISSIONS; label: string; default: boolean }[] = [
+    { key: 'queue', label: 'Manage Queue', default: true },
+    { key: 'appointments', label: 'Manage Appointments', default: true },
+    { key: 'prescriptions', label: 'View & Print Prescriptions', default: true },
+    { key: 'register', label: 'Register New Patients', default: true },
+    { key: 'history', label: 'View Patient Visit History', default: false },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <SectionLabel>My Team — Patient Secretaries</SectionLabel>
+          <p className="text-xs text-gray-400 -mt-3 mb-4">PS members can log in at <span className="font-semibold text-teal-600">/ps/dashboard</span> to manage queue and appointments.</p>
+        </div>
+        <button onClick={() => setShowAdd(!showAdd)}
+          className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-xl hover:bg-teal-700 transition">
+          <Plus className="w-3.5 h-3.5" /> Add PS Member
+        </button>
+      </div>
+
+      {/* Existing members */}
+      <div className="space-y-3">
+        {members.length === 0 && !showAdd && (
+          <div className="border border-dashed border-gray-200 rounded-2xl p-8 text-center text-xs text-gray-400">
+            No team members added yet
+          </div>
+        )}
+        {members.map((m) => (
+          <div key={m.id} className="border border-gray-200 rounded-2xl p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                  <span className="text-sm font-black text-teal-700">{m.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{m.name}</p>
+                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3" />{m.phone}</p>
+                  <div className="flex gap-1.5 mt-1 flex-wrap">
+                    {m.chambers.map((cid) => {
+                      const ch = chambers.find((c) => c.id === cid);
+                      return ch ? <span key={cid} className="text-[10px] font-semibold px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">{ch.name}</span> : null;
+                    })}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${m.active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {m.active ? 'Active' : 'Inactive'}
+                </span>
+                <button onClick={() => setMembers((ms) => ms.map((x) => x.id === m.id ? { ...x, active: !x.active } : x))}
+                  className="text-xs font-semibold text-orange-500 hover:text-orange-700 transition px-2 py-1 rounded-lg hover:bg-orange-50">
+                  {m.active ? 'Deactivate' : 'Activate'}
+                </button>
+                <button onClick={() => setMembers((ms) => ms.filter((x) => x.id !== m.id))}
+                  className="text-xs font-semibold text-red-500 hover:text-red-700 transition px-2 py-1 rounded-lg hover:bg-red-50">
+                  Remove
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-gray-100">
+              {PERM_LABELS.filter((pl) => m.permissions[pl.key]).map((pl) => (
+                <span key={pl.key} className="text-[10px] font-semibold px-2 py-0.5 bg-teal-50 text-teal-700 rounded-full">{pl.label}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add form */}
+      {showAdd && (
+        <div className="border-2 border-teal-200 bg-teal-50/30 rounded-2xl p-5 space-y-4">
+          <p className="text-sm font-bold text-gray-800">Add New PS Member</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Full Name <span className="text-red-500">*</span></FieldLabel>
+              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Full name" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            </div>
+            <div>
+              <FieldLabel>Phone <span className="text-red-500">*</span></FieldLabel>
+              <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                placeholder="01XXXXXXXXX" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            </div>
+            <div className="sm:col-span-2">
+              <FieldLabel>Email (optional)</FieldLabel>
+              <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="ps@example.com" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Assign to Chamber</FieldLabel>
+            <div className="space-y-2">
+              {chambers.map((ch) => (
+                <label key={ch.id} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input type="checkbox" checked={form.chambers.includes(ch.id)} onChange={() => toggleChamber(ch.id)} className="w-4 h-4 accent-teal-600 rounded" />
+                  <span className="text-sm font-semibold text-gray-700">{ch.name}</span>
+                </label>
+              ))}
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={form.chambers.length === chambers.length}
+                  onChange={() => setForm((f) => ({ ...f, chambers: f.chambers.length === chambers.length ? [] : chambers.map((c) => c.id) }))}
+                  className="w-4 h-4 accent-teal-600 rounded" />
+                <span className="text-sm font-semibold text-gray-600 italic">All Chambers</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Permissions</FieldLabel>
+            <div className="space-y-2">
+              {PERM_LABELS.map((pl) => (
+                <label key={pl.key} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input type="checkbox" checked={form.permissions[pl.key]} onChange={() => togglePerm(pl.key)} className="w-4 h-4 accent-teal-600 rounded" />
+                  <span className="text-sm font-semibold text-gray-700">{pl.label}</span>
+                  {pl.default && <span className="text-[10px] text-gray-400">(default on)</span>}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={addMember} className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 transition">
+              <Plus className="w-4 h-4" /> Add PS Member
+            </button>
+            <button onClick={() => setShowAdd(false)} className="px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -722,6 +878,9 @@ export default function SettingsPage() {
               </div>
               <SaveButton />
             </>)}
+
+            {/* ══════════════ MY TEAM ══════════════ */}
+            {activeTab === 'myteam' && (<MyTeamTab chambers={chambers} />)}
 
             {/* ══════════════ NOTIFICATIONS ══════════════ */}
             {activeTab === 'notifications' && (<>
