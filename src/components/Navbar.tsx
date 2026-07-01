@@ -40,7 +40,13 @@ export default function Navbar() {
           </nav>
 
           {/* Desktop auth buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            <Link
+              to="/join-as-doctor"
+              className="px-3.5 py-2 text-sm font-semibold text-green-700 border border-green-500 rounded-lg hover:bg-green-50 transition-colors duration-150 whitespace-nowrap"
+            >
+              Join as Doctor
+            </Link>
             <a
               href="#login"
               className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-150"
@@ -80,6 +86,13 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="mt-3 flex flex-col gap-2">
+            <Link
+              to="/join-as-doctor"
+              onClick={() => setMobileOpen(false)}
+              className="block text-center px-4 py-2.5 text-sm font-semibold text-green-700 border border-green-500 rounded-lg hover:bg-green-50 transition-colors"
+            >
+              Join as Doctor
+            </Link>
             <a
               href="#login"
               className="block text-center px-4 py-2.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"

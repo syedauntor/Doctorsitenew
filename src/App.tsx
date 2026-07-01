@@ -5,6 +5,7 @@ import DoctorProfilePage from './pages/DoctorProfilePage';
 import LiveQueuePage from './pages/LiveQueuePage';
 import MedicinesPage from './pages/MedicinesPage';
 import MedicineDetailPage from './pages/MedicineDetailPage';
+import JoinAsDoctorPage from './pages/JoinAsDoctorPage';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/queue/:doctorId" element={<LiveQueuePage />} />
         <Route path="/medicines" element={<MedicinesPage />} />
         <Route path="/medicines/:slug" element={<MedicineDetailPage />} />
+        <Route path="/join-as-doctor" element={<JoinAsDoctorPage />} />
       </Routes>
     </BrowserRouter>
   );
