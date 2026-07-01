@@ -5,57 +5,140 @@ import {
   Download, StickyNote, Save, Clock, Plus,
   Printer, ChevronDown, ChevronUp, Activity,
   Pill, AlertCircle, Stethoscope, BarChart2,
+  ClipboardList,
 } from 'lucide-react';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceArea, ReferenceLine, Legend,
-} from 'recharts';
 import DoctorLayout from '../../components/DoctorLayout';
-import { PATIENTS, type PatientData } from '../../data/patients';
+import { PATIENTS, type PatientData, type VitalEntry } from '../../data/patients';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{children}</p>;
-}
 
 function Badge({ children, color = 'blue' }: { children: React.ReactNode; color?: 'blue' | 'red' | 'green' | 'orange' | 'gray' }) {
   const map = { blue: 'bg-blue-50 text-blue-700 border-blue-200', red: 'bg-red-50 text-red-700 border-red-200', green: 'bg-green-50 text-green-700 border-green-200', orange: 'bg-orange-50 text-orange-700 border-orange-200', gray: 'bg-gray-100 text-gray-600 border-gray-200' };
   return <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${map[color]}`}>{children}</span>;
 }
 
-// ── Vitals Chart ─────────────────────────────────────────────────────────────
+// ── SVG Line Chart ────────────────────────────────────────────────────────────
 
 interface ChartDef {
   key: string; title: string; unit: string;
   lines: { key: string; name: string; color: string }[];
-  zones?: { y1: number; y2: number; color: string; label: string }[];
-  danger?: number; low?: number; high?: number;
+  zones?: { y1: number; y2: number; color: string }[];
+  danger?: number;
 }
 
 const CHART_DEFS: ChartDef[] = [
-  { key: 'bp', title: 'Blood Pressure', unit: 'mmHg', lines: [{ key: 'systolic', name: 'Systolic', color: '#2563EB' }, { key: 'diastolic', name: 'Diastolic', color: '#16A34A' }], zones: [{ y1: 90, y2: 120, color: '#d1fae5', label: 'Normal' }], danger: 140 },
-  { key: 'sugar', title: 'Blood Sugar (FBS)', unit: 'mmol/L', lines: [{ key: 'value', name: 'Blood Sugar', color: '#2563EB' }], zones: [{ y1: 4.0, y2: 5.6, color: '#d1fae5', label: 'Normal' }, { y1: 5.6, y2: 7.0, color: '#fef9c3', label: 'Pre-DM' }], danger: 7.0 },
+  { key: 'bp', title: 'Blood Pressure', unit: 'mmHg', lines: [{ key: 'systolic', name: 'Systolic', color: '#2563EB' }, { key: 'diastolic', name: 'Diastolic', color: '#16A34A' }], zones: [{ y1: 90, y2: 120, color: '#d1fae5' }], danger: 140 },
+  { key: 'sugar', title: 'Blood Sugar (FBS)', unit: 'mmol/L', lines: [{ key: 'value', name: 'Blood Sugar', color: '#2563EB' }], zones: [{ y1: 4.0, y2: 5.6, color: '#d1fae5' }, { y1: 5.6, y2: 7.0, color: '#fef3c7' }], danger: 7.0 },
   { key: 'weight', title: 'Weight', unit: 'kg', lines: [{ key: 'value', name: 'Weight', color: '#7c3aed' }] },
-  { key: 'hemoglobin', title: 'Hemoglobin', unit: 'g/dL', lines: [{ key: 'value', name: 'Hemoglobin', color: '#dc2626' }], zones: [{ y1: 12, y2: 17, color: '#d1fae5', label: 'Normal' }], low: 12 },
-  { key: 'creatinine', title: 'Creatinine', unit: 'mg/dL', lines: [{ key: 'value', name: 'Creatinine', color: '#ea580c' }], zones: [{ y1: 0.7, y2: 1.3, color: '#d1fae5', label: 'Normal' }], high: 1.3 },
-  { key: 'hba1c', title: 'HbA1c', unit: '%', lines: [{ key: 'value', name: 'HbA1c', color: '#9333ea' }], zones: [{ y1: 0, y2: 5.7, color: '#d1fae5', label: 'Normal' }, { y1: 5.7, y2: 6.5, color: '#fef9c3', label: 'Pre-DM' }], danger: 6.5 },
-  { key: 'pulse', title: 'Pulse Rate', unit: 'bpm', lines: [{ key: 'value', name: 'Pulse', color: '#e11d48' }], zones: [{ y1: 60, y2: 100, color: '#d1fae5', label: 'Normal' }], low: 60, high: 100 },
+  { key: 'hemoglobin', title: 'Hemoglobin', unit: 'g/dL', lines: [{ key: 'value', name: 'Hb', color: '#dc2626' }], zones: [{ y1: 12, y2: 17, color: '#d1fae5' }] },
+  { key: 'creatinine', title: 'Creatinine', unit: 'mg/dL', lines: [{ key: 'value', name: 'Creatinine', color: '#ea580c' }], zones: [{ y1: 0.7, y2: 1.3, color: '#d1fae5' }], danger: 1.3 },
+  { key: 'hba1c', title: 'HbA1c', unit: '%', lines: [{ key: 'value', name: 'HbA1c', color: '#9333ea' }], zones: [{ y1: 0, y2: 5.7, color: '#d1fae5' }, { y1: 5.7, y2: 6.5, color: '#fef3c7' }], danger: 6.5 },
+  { key: 'pulse', title: 'Pulse Rate', unit: 'bpm', lines: [{ key: 'value', name: 'Pulse', color: '#e11d48' }], zones: [{ y1: 60, y2: 100, color: '#d1fae5' }] },
 ];
+
+function SvgLineChart({ rows, lines, zones, danger, unit }: {
+  rows: Record<string, number | string>[];
+  lines: { key: string; name: string; color: string }[];
+  zones?: { y1: number; y2: number; color: string }[];
+  danger?: number;
+  unit: string;
+}) {
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; vals: { name: string; v: number; color: string }[] } | null>(null);
+
+  const W = 320; const H = 110;
+  const padL = 32; const padR = 12; const padT = 8; const padB = 22;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const allVals = lines.flatMap((l) => rows.map((r) => Number(r[l.key] ?? 0)));
+  const zoneVals = zones ? zones.flatMap((z) => [z.y1, z.y2]) : [];
+  const allForScale = [...allVals, ...zoneVals, danger ?? 0].filter(Boolean);
+  const rawMin = Math.min(...allForScale);
+  const rawMax = Math.max(...allForScale);
+  const padding = (rawMax - rawMin) * 0.2 || 2;
+  const yMin = Math.max(0, rawMin - padding);
+  const yMax = rawMax + padding;
+
+  const toX = (i: number) => padL + (rows.length <= 1 ? plotW / 2 : (i / (rows.length - 1)) * plotW);
+  const toY = (v: number) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+  const linePath = (key: string) => rows.map((r, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(Number(r[key])).toFixed(1)}`).join(' ');
+
+  const yTicks = [yMin, (yMin + yMax) / 2, yMax];
+
+  return (
+    <div className="relative">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }} onMouseLeave={() => setTooltip(null)}>
+        {/* Zone bands */}
+        {zones?.map((z, zi) => {
+          const y1 = toY(Math.min(z.y2, yMax));
+          const y2 = toY(Math.max(z.y1, yMin));
+          return y2 > y1 ? <rect key={zi} x={padL} y={y1} width={plotW} height={y2 - y1} fill={z.color} opacity="0.6" /> : null;
+        })}
+        {/* Danger line */}
+        {danger && danger >= yMin && danger <= yMax && (
+          <line x1={padL} y1={toY(danger)} x2={W - padR} y2={toY(danger)} stroke="#ef4444" strokeWidth="1" strokeDasharray="4 2" />
+        )}
+        {/* Y-axis ticks */}
+        {yTicks.map((v) => (
+          <text key={v} x={padL - 4} y={toY(v) + 3} textAnchor="end" style={{ fontSize: 8, fill: '#94a3b8' }}>{v.toFixed(v % 1 !== 0 ? 1 : 0)}</text>
+        ))}
+        {/* Grid */}
+        {yTicks.map((v) => (
+          <line key={v} x1={padL} y1={toY(v)} x2={W - padR} y2={toY(v)} stroke="#f1f5f9" strokeWidth="1" />
+        ))}
+        {/* Lines */}
+        {lines.map((l) => (
+          <path key={l.key} d={linePath(l.key)} fill="none" stroke={l.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        ))}
+        {/* Dots + hover targets */}
+        {rows.map((r, i) => (
+          <g key={i}
+            onMouseEnter={() => setTooltip({
+              x: toX(i), y: Math.min(...lines.map((l) => toY(Number(r[l.key])))),
+              label: String(r.date),
+              vals: lines.map((l) => ({ name: l.name, v: Number(r[l.key]), color: l.color })),
+            })}
+          >
+            {lines.map((l) => <circle key={l.key} cx={toX(i)} cy={toY(Number(r[l.key]))} r="3" fill={l.color} />)}
+            <rect x={toX(i) - 10} y={padT} width={20} height={plotH} fill="transparent" className="cursor-pointer" />
+          </g>
+        ))}
+        {/* X labels */}
+        {rows.map((r, i) => (
+          <text key={i} x={toX(i)} y={H - 4} textAnchor="middle" style={{ fontSize: 8, fill: '#94a3b8' }}>{String(r.date)}</text>
+        ))}
+      </svg>
+      {/* Tooltip */}
+      {tooltip && (
+        <div className="absolute pointer-events-none bg-gray-900 text-white text-[10px] font-semibold rounded-lg px-2 py-1.5 shadow-xl whitespace-nowrap z-10"
+          style={{ left: Math.min(tooltip.x - 30, W - 90), top: 0, transform: 'translateY(-5px)' }}>
+          <p className="text-gray-300 mb-0.5">{tooltip.label}</p>
+          {tooltip.vals.map((v) => (
+            <div key={v.name} className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ background: v.color }} />
+              {v.name}: <b>{v.v} {unit}</b>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function VitalChart({ chartDef, patient }: { chartDef: ChartDef; patient: PatientData }) {
   const vitals = patient.vitals as Record<string, unknown>;
-  let data: Record<string, number | string>[] = [];
+  let rows: Record<string, number | string>[] = [];
 
   if (chartDef.key === 'bp') {
-    const bpData = vitals.bp as { systolic: { date: string; value: number }[]; diastolic: { date: string; value: number }[] };
-    data = bpData.systolic.map((s, i) => ({ date: s.date, systolic: s.value, diastolic: bpData.diastolic[i]?.value ?? 0 }));
+    const bp = vitals.bp as { systolic: VitalEntry[]; diastolic: VitalEntry[] };
+    rows = bp.systolic.map((s, i) => ({ date: s.date, systolic: s.value, diastolic: bp.diastolic[i]?.value ?? 0 }));
   } else {
-    const raw = vitals[chartDef.key] as { date: string; value: number }[];
-    data = raw.map((r) => ({ date: r.date, value: r.value }));
+    const raw = vitals[chartDef.key] as VitalEntry[];
+    rows = raw.map((r) => ({ date: r.date, value: r.value }));
   }
 
-  if (data.length === 0) {
+  if (rows.length === 0) {
     return (
       <div className="border border-dashed border-gray-200 rounded-2xl p-6 text-center">
         <BarChart2 className="w-8 h-8 text-gray-200 mx-auto mb-2" />
@@ -65,17 +148,17 @@ function VitalChart({ chartDef, patient }: { chartDef: ChartDef; patient: Patien
     );
   }
 
-  if (data.length === 1) {
+  if (rows.length === 1) {
     const val = chartDef.key === 'bp'
-      ? `${data[0].systolic}/${data[0].diastolic} mmHg`
-      : `${data[0].value} ${chartDef.unit}`;
+      ? `${rows[0].systolic}/${rows[0].diastolic} ${chartDef.unit}`
+      : `${rows[0].value} ${chartDef.unit}`;
     return (
       <div className="border border-gray-200 rounded-2xl p-4 flex items-center gap-4">
         <Activity className="w-8 h-8 text-blue-400 shrink-0" />
         <div>
           <p className="text-xs font-semibold text-gray-500">{chartDef.title} (single reading)</p>
           <p className="text-xl font-black text-gray-900">{val}</p>
-          <p className="text-[10px] text-gray-400">{data[0].date as string}</p>
+          <p className="text-[10px] text-gray-400">{String(rows[0].date)}</p>
         </div>
       </div>
     );
@@ -83,23 +166,18 @@ function VitalChart({ chartDef, patient }: { chartDef: ChartDef; patient: Patien
 
   return (
     <div>
-      <p className="text-xs font-bold text-gray-700 mb-2">{chartDef.title} <span className="text-gray-400 font-normal">({chartDef.unit})</span></p>
-      <ResponsiveContainer width="100%" height={150}>
-        <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-          <Tooltip contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: 11 }} />
-          {chartDef.zones?.map((z) => (
-            <ReferenceArea key={z.label} y1={z.y1} y2={z.y2} fill={z.color} fillOpacity={0.4} />
-          ))}
-          {chartDef.danger && <ReferenceLine y={chartDef.danger} stroke="#ef4444" strokeDasharray="4 2" label={{ value: 'High', position: 'right', fontSize: 9, fill: '#ef4444' }} />}
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-bold text-gray-700">{chartDef.title} <span className="text-gray-400 font-normal">({chartDef.unit})</span></p>
+        <div className="flex gap-3">
           {chartDef.lines.map((l) => (
-            <Line key={l.key} type="monotone" dataKey={l.key} name={l.name} stroke={l.color} strokeWidth={2.5} dot={{ r: 3, fill: l.color }} activeDot={{ r: 5 }} />
+            <div key={l.key} className="flex items-center gap-1">
+              <span className="w-3 h-0.5 rounded inline-block" style={{ background: l.color }} />
+              <span className="text-[10px] text-gray-500">{l.name}</span>
+            </div>
           ))}
-          {chartDef.lines.length > 1 && <Legend wrapperStyle={{ fontSize: 10 }} />}
-        </LineChart>
-      </ResponsiveContainer>
+        </div>
+      </div>
+      <SvgLineChart rows={rows} lines={chartDef.lines} zones={chartDef.zones} danger={chartDef.danger} unit={chartDef.unit} />
     </div>
   );
 }
@@ -114,7 +192,6 @@ function OverviewTab({ patient }: { patient: PatientData }) {
 
   return (
     <div className="space-y-5">
-      {/* Chief complaints */}
       <div>
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Recurring Complaints</p>
         {patient.visits.length === 0 ? (
@@ -124,14 +201,13 @@ function OverviewTab({ patient }: { patient: PatientData }) {
             {patient.visits.slice(0, 4).map((v) => (
               <div key={v.id} className="flex items-start gap-2">
                 <span className="text-[10px] text-gray-400 shrink-0 mt-0.5">{v.date}</span>
-                <span className={`text-xs ${['Headache', 'Polyuria', 'Chest pain', 'Palpitation'].some((c) => v.complaint.toLowerCase().includes(c.toLowerCase())) ? 'font-semibold text-orange-600' : 'text-gray-600'}`}>{v.complaint}</span>
+                <span className={`text-xs ${['Headache', 'Polyuria', 'Chest', 'Palpit'].some((c) => v.complaint.toLowerCase().includes(c.toLowerCase())) ? 'font-semibold text-orange-600' : 'text-gray-600'}`}>{v.complaint}</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Known conditions */}
       <div>
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Known Conditions</p>
         <div className="flex flex-wrap gap-1.5 mb-2">
@@ -149,7 +225,6 @@ function OverviewTab({ patient }: { patient: PatientData }) {
         </div>
       </div>
 
-      {/* Allergies */}
       <div>
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1"><AlertCircle className="w-3 h-3 text-red-500" /> Known Allergies</p>
         <div className="flex flex-wrap gap-1.5">
@@ -158,7 +233,6 @@ function OverviewTab({ patient }: { patient: PatientData }) {
         </div>
       </div>
 
-      {/* Current meds */}
       <div>
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1"><Pill className="w-3 h-3 text-blue-500" /> Current Medications</p>
         {patient.currentMeds.length === 0 ? (
@@ -175,7 +249,6 @@ function OverviewTab({ patient }: { patient: PatientData }) {
         )}
       </div>
 
-      {/* Notes */}
       <div>
         <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1"><StickyNote className="w-3 h-3" /> Private Notes — only you can see</p>
         <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)}
@@ -210,7 +283,6 @@ function VitalsTab({ patient }: { patient: PatientData }) {
 
   return (
     <div className="space-y-4">
-      {/* BMI */}
       {bmi && (
         <div className="bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5 flex items-center gap-3">
           <Activity className="w-4 h-4 text-blue-500 shrink-0" />
@@ -219,7 +291,6 @@ function VitalsTab({ patient }: { patient: PatientData }) {
         </div>
       )}
 
-      {/* Toggle buttons */}
       <div className="flex flex-wrap gap-1.5">
         {CHART_DEFS.map((c) => (
           <button key={c.key} onClick={() => toggle(c.key)}
@@ -229,7 +300,6 @@ function VitalsTab({ patient }: { patient: PatientData }) {
         ))}
       </div>
 
-      {/* Charts */}
       <div className="space-y-4">
         {CHART_DEFS.filter((c) => visible.includes(c.key)).map((c) => (
           <div key={c.key} className="bg-gray-50 rounded-2xl p-4">
@@ -238,7 +308,6 @@ function VitalsTab({ patient }: { patient: PatientData }) {
         ))}
       </div>
 
-      {/* Add manual result */}
       <button onClick={() => setAddOpen(!addOpen)}
         className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 transition mt-1">
         <Plus className="w-3.5 h-3.5" /> Add Manual Lab Result
@@ -295,11 +364,9 @@ function VisitsTab({ patient }: { patient: PatientData }) {
       </div>
       {patient.visits.map((v) => (
         <div key={v.id} className="border border-gray-200 rounded-2xl overflow-hidden">
-          {/* Collapsed header */}
           <button
             onClick={() => setExpanded(expanded === v.id ? null : v.id)}
-            className="w-full flex items-start justify-between gap-3 px-4 py-3.5 hover:bg-gray-50 transition text-left"
-          >
+            className="w-full flex items-start justify-between gap-3 px-4 py-3.5 hover:bg-gray-50 transition text-left">
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap mb-0.5">
                 <span className="text-xs font-bold text-gray-800">{v.date}</span>
@@ -311,7 +378,6 @@ function VisitsTab({ patient }: { patient: PatientData }) {
             {expanded === v.id ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0 mt-1" /> : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 mt-1" />}
           </button>
 
-          {/* Expanded */}
           {expanded === v.id && (
             <div className="border-t border-gray-100 px-4 py-4 bg-gray-50 space-y-3">
               {v.fullComplaint && (
@@ -323,13 +389,13 @@ function VisitsTab({ patient }: { patient: PatientData }) {
               {(v.bp || v.pulse || v.temp || v.weight || v.spo2) && (
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">On Examination</p>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {v.bp && <span className="text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5"><b>BP:</b> {v.bp} mmHg</span>}
                     {v.pulse && <span className="text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5"><b>Pulse:</b> {v.pulse} bpm</span>}
                     {v.temp && <span className="text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5"><b>Temp:</b> {v.temp}°F</span>}
                     {v.weight && <span className="text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5"><b>Wt:</b> {v.weight} kg</span>}
                     {v.spo2 && <span className="text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5"><b>SpO2:</b> {v.spo2}%</span>}
-                    {v.edema !== undefined && <span className="text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5"><b>Edema:</b> {v.edema ? 'Yes' : 'Absent'}</span>}
+                    {v.edema !== undefined && <span className="text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5"><b>Edema:</b> {v.edema ? 'Present' : 'Absent'}</span>}
                   </div>
                 </div>
               )}
@@ -407,9 +473,9 @@ function PatientDrawer({ patient, onClose, onRx }: { patient: PatientData; onClo
   const [activeTab, setActiveTab] = useState<'overview' | 'vitals' | 'visits' | 'rx'>('overview');
 
   const TABS = [
-    { id: 'overview', label: 'Overview', icon: Stethoscope },
+    { id: 'overview', label: 'Overview',      icon: Stethoscope },
     { id: 'vitals',   label: 'Vitals & Labs', icon: Activity },
-    { id: 'visits',   label: 'Visits', icon: ClipboardList },
+    { id: 'visits',   label: 'Visits',        icon: ClipboardList },
     { id: 'rx',       label: 'Prescriptions', icon: FileText },
   ] as const;
 
@@ -437,7 +503,6 @@ function PatientDrawer({ patient, onClose, onRx }: { patient: PatientData; onClo
             </div>
             <button onClick={onClose} className="p-2 rounded-xl text-blue-200 hover:bg-blue-500 hover:text-white transition"><X className="w-5 h-5" /></button>
           </div>
-          {/* Quick info row */}
           <div className="flex gap-2 flex-wrap">
             <span className="text-xs font-bold bg-blue-500 text-white px-2.5 py-1 rounded-full">{patient.bloodGroup}</span>
             <span className="text-xs font-semibold bg-blue-500 text-white px-2.5 py-1 rounded-full">{patient.regType}</span>
@@ -492,9 +557,6 @@ function PatientDrawer({ patient, onClose, onRx }: { patient: PatientData; onClo
   );
 }
 
-// needed for drawer tab types
-import { ClipboardList } from 'lucide-react';
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function PatientsPage() {
@@ -510,7 +572,7 @@ export default function PatientsPage() {
       filter === 'All' ? true :
       filter === 'New' ? p.totalVisits === 1 :
       filter === 'Regular' ? p.totalVisits >= 5 :
-      filter === 'This Month' ? p.lastVisit.includes('Jun 2026') || p.lastVisit.includes('Jul 2026') : true;
+      filter === 'This Month' ? (p.lastVisit.includes('Jun 2026') || p.lastVisit.includes('Jul 2026')) : true;
     return matchSearch && matchFilter;
   });
 
@@ -525,7 +587,6 @@ export default function PatientsPage() {
           <span className="text-xs font-black px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full">{PATIENTS.length}</span>
         </div>
 
-        {/* Search + filter */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -543,14 +604,10 @@ export default function PatientsPage() {
           </div>
         </div>
 
-        {/* Table */}
         {filtered.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
             <Users className="w-12 h-12 text-gray-200 mx-auto mb-4" />
             <p className="text-base font-bold text-gray-400">No patients found</p>
-            <p className="text-sm text-gray-400 mt-1">
-              {PATIENTS.length === 0 ? 'Your patients will appear here after the first appointment' : 'Try adjusting your search or filter'}
-            </p>
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -613,7 +670,7 @@ export default function PatientsPage() {
       </div>
 
       {selected && (
-        <PatientDrawer patient={selected} onClose={() => setSelected(null)} onRx={() => navigate('/doctor/prescriptions/new')} />
+        <PatientDrawer patient={selected} onClose={() => setSelected(null)} onRx={() => { navigate('/doctor/prescriptions/new'); setSelected(null); }} />
       )}
 
       <style>{`
