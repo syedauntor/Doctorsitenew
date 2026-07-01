@@ -1,115 +1,77 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
-  User, Stethoscope, Building2, Clock, Bell,
-  CalendarOff, Settings, Plus, X, Save, Wifi,
-  ChevronDown, AlertTriangle,
+  User, Stethoscope, Building2, CalendarOff, Settings,
+  Bell, ShieldCheck, Star, Plus, X, Save, Wifi,
+  AlertTriangle, BadgeCheck, Clock, Flag,
+  MessageSquare, Edit2, Trash2, ChevronDown,
 } from 'lucide-react';
 import DoctorLayout from '../../components/DoctorLayout';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-const TABS_LIST = [
-  { id: 'personal', label: 'Personal Info', icon: User },
-  { id: 'professional', label: 'Professional', icon: Stethoscope },
-  { id: 'chamber', label: 'Chamber Settings', icon: Building2 },
-  { id: 'availability', label: 'Availability', icon: CalendarOff },
-  { id: 'booking', label: 'Booking Settings', icon: Settings },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-];
-
 const ALL_DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', 'Rangpur', 'Barisal', 'Mymensingh'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-interface DaySchedule {
-  day: string;
-  active: boolean;
-  open: string;
-  close: string;
-  maxPatients: string;
-}
+const TABS_LIST = [
+  { id: 'personal',       label: 'Personal Info',     icon: User },
+  { id: 'professional',   label: 'Professional',       icon: Stethoscope },
+  { id: 'verification',   label: 'Verification',       icon: ShieldCheck },
+  { id: 'chamber',        label: 'Chamber Settings',   icon: Building2 },
+  { id: 'availability',   label: 'Availability',       icon: CalendarOff },
+  { id: 'booking',        label: 'Booking Settings',   icon: Settings },
+  { id: 'notifications',  label: 'Notifications',      icon: Bell },
+  { id: 'reviews',        label: 'Reviews & Q&A',      icon: Star },
+];
 
+interface DaySchedule { day: string; active: boolean; open: string; close: string; maxPatients: string }
 interface ChamberAvailability {
-  chamberId: string;
-  chamberName: string;
-  isOnline: boolean;
-  schedule: DaySchedule[];
-  slotDuration: number;
-  slotGap: number;
+  chamberId: string; chamberName: string; isOnline: boolean;
+  schedule: DaySchedule[]; slotDuration: number; slotGap: number;
   unavailableDates: { date: string; reason: string }[];
-  holidayMode: boolean;
-  holidayFrom: string;
-  holidayTo: string;
-  holidayReason: string;
+  holidayMode: boolean; holidayFrom: string; holidayTo: string; holidayReason: string;
 }
-
 interface ChamberData {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  phone: string;
-  newFee: string;
-  followFee: string;
-  online: boolean;
-  onlineNewFee: string;
-  onlineFollowFee: string;
+  id: string; name: string; address: string; city: string; phone: string;
+  newFee: string; followFee: string; online: boolean; onlineNewFee: string; onlineFollowFee: string;
 }
-
-function defaultSchedule(): DaySchedule[] {
-  return ALL_DAYS.map((day, i) => ({
-    day,
-    active: [0, 1, 3, 5].includes(i),
-    open: i < 4 ? '10:00' : '16:00',
-    close: i < 4 ? '14:00' : '20:00',
-    maxPatients: '20',
-  }));
+interface Publication { id: number; title: string; journal: string; year: string; url: string }
+interface Award { id: number; name: string; org: string; year: string }
+interface Review {
+  id: number; patient: string; rating: number; comment: string; date: string; reply: string;
 }
+interface QA { id: number; question: string; answer: string; asker: string; date: string; answered: boolean }
 
-function defaultChamberAvailability(id: string, name: string, isOnline = false): ChamberAvailability {
-  return {
-    chamberId: id, chamberName: name, isOnline,
-    schedule: defaultSchedule(),
-    slotDuration: 15, slotGap: 5,
-    unavailableDates: [],
-    holidayMode: false,
-    holidayFrom: '', holidayTo: '', holidayReason: '',
-  };
-}
-
-// ─── Small UI helpers ─────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
     <button type="button" onClick={onChange}
-      className={`relative inline-flex h-6 w-11 rounded-full transition-colors duration-200 focus:outline-none ${checked ? 'bg-blue-600' : 'bg-gray-200'}`}>
-      <span className={`inline-block w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 mt-1 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+      className={`relative inline-flex h-6 w-11 rounded-full transition-colors focus:outline-none ${checked ? 'bg-blue-600' : 'bg-gray-200'}`}>
+      <span className={`inline-block w-4 h-4 rounded-full bg-white shadow transform transition-transform mt-1 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
     </button>
   );
 }
 
-function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+function FieldLabel({ children, note }: { children: React.ReactNode; note?: string }) {
   return (
-    <input {...props}
-      className={`w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${props.className ?? ''}`} />
+    <div className="mb-1.5">
+      <label className="text-sm font-semibold text-gray-700">{children}</label>
+      {note && <p className="text-[11px] text-gray-400 mt-0.5">{note}</p>}
+    </div>
   );
-}
-
-function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { children: React.ReactNode }) {
-  const { children, ...rest } = props;
-  return (
-    <select {...rest}
-      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition appearance-none">
-      {children}
-    </select>
-  );
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-sm font-semibold text-gray-700 mb-1.5">{children}</label>;
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">{children}</h3>;
+  return <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 mt-2">{children}</h3>;
+}
+
+function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  const { className, ...rest } = props;
+  return (
+    <input {...rest}
+      className={`w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${className ?? ''}`} />
+  );
 }
 
 function SaveButton({ label = 'Save Changes' }: { label?: string }) {
@@ -120,38 +82,87 @@ function SaveButton({ label = 'Save Changes' }: { label?: string }) {
   );
 }
 
-// ─── Mini calendar ─────────────────────────────────────────────────────────────
+function Stars({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1,2,3,4,5].map((s) => (
+        <span key={s} className={`text-sm ${s <= rating ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+      ))}
+    </div>
+  );
+}
 
-const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function MiniCalendar({
-  unavailableDates,
-  onToggleDate,
+// Tags input
+function TagsInput({
+  tags, onAdd, onRemove, placeholder, color = 'blue',
 }: {
-  unavailableDates: { date: string; reason: string }[];
-  onToggleDate: (date: string) => void;
+  tags: string[]; onAdd: (t: string) => void; onRemove: (t: string) => void;
+  placeholder?: string; color?: 'blue' | 'purple';
 }) {
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(6); // July = index 6
+  const [val, setVal] = useState('');
+  const colorMap = {
+    blue: 'bg-blue-50 text-blue-700 border-blue-200',
+    purple: 'bg-purple-50 text-purple-700 border-purple-200',
+  };
+  const handleKey = (e: React.KeyboardEvent) => {
+    if ((e.key === 'Enter' || e.key === ',') && val.trim()) {
+      e.preventDefault();
+      if (!tags.includes(val.trim())) onAdd(val.trim());
+      setVal('');
+    }
+  };
+  return (
+    <div className="border border-gray-200 rounded-xl px-3 py-2 flex flex-wrap gap-1.5 focus-within:ring-2 focus-within:ring-blue-500 min-h-[44px] bg-white">
+      {tags.map((t) => (
+        <span key={t} className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border ${colorMap[color]}`}>
+          {t}
+          <button type="button" onClick={() => onRemove(t)} className="ml-0.5 opacity-60 hover:opacity-100">
+            <X className="w-2.5 h-2.5" />
+          </button>
+        </span>
+      ))}
+      <input
+        type="text" value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onKeyDown={handleKey}
+        placeholder={tags.length === 0 ? placeholder : ''}
+        className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder-gray-400"
+      />
+    </div>
+  );
+}
 
+// ─── Availability helpers ─────────────────────────────────────────────────────
+
+function defaultSchedule(): DaySchedule[] {
+  return ALL_DAYS.map((day, i) => ({
+    day, active: [0, 1, 3, 5].includes(i),
+    open: i < 4 ? '10:00' : '16:00', close: i < 4 ? '14:00' : '20:00', maxPatients: '20',
+  }));
+}
+function defaultChamberAvail(id: string, name: string, isOnline = false): ChamberAvailability {
+  return { chamberId: id, chamberName: name, isOnline, schedule: defaultSchedule(), slotDuration: 15, slotGap: 5, unavailableDates: [], holidayMode: false, holidayFrom: '', holidayTo: '', holidayReason: '' };
+}
+
+const REASON_OPTIONS = ['Holiday', 'Personal', 'Conference', 'Training', 'Other'];
+
+function MiniCalendar({ unavailableDates, onToggleDate }: { unavailableDates: { date: string; reason: string }[]; onToggleDate: (d: string) => void }) {
+  const [year, setYear] = useState(2026);
+  const [month, setMonth] = useState(6);
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const unavailSet = new Set(unavailableDates.map((d) => d.date));
-
   const prev = () => { if (month === 0) { setMonth(11); setYear((y) => y - 1); } else setMonth((m) => m - 1); };
   const next = () => { if (month === 11) { setMonth(0); setYear((y) => y + 1); } else setMonth((m) => m + 1); };
-
   return (
     <div className="border border-gray-200 rounded-2xl p-4 select-none">
       <div className="flex items-center justify-between mb-3">
-        <button onClick={prev} className="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-500">‹</button>
+        <button onClick={prev} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">‹</button>
         <span className="text-sm font-bold text-gray-800">{MONTH_NAMES[month]} {year}</span>
-        <button onClick={next} className="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-500">›</button>
+        <button onClick={next} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">›</button>
       </div>
       <div className="grid grid-cols-7 gap-0.5 mb-1">
-        {['S','M','T','W','T','F','S'].map((d, i) => (
-          <div key={i} className="text-center text-[10px] font-bold text-gray-400 py-0.5">{d}</div>
-        ))}
+        {['S','M','T','W','T','F','S'].map((d, i) => <div key={i} className="text-center text-[10px] font-bold text-gray-400 py-0.5">{d}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-0.5">
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
@@ -161,15 +172,8 @@ function MiniCalendar({
           const isUnavail = unavailSet.has(dateStr);
           const isToday = d === 1 && month === 6 && year === 2026;
           return (
-            <button
-              key={d}
-              onClick={() => onToggleDate(dateStr)}
-              className={`aspect-square flex items-center justify-center rounded-lg text-xs font-semibold transition ${
-                isUnavail ? 'bg-red-500 text-white hover:bg-red-600' :
-                isToday ? 'bg-blue-600 text-white' :
-                'hover:bg-gray-100 text-gray-700'
-              }`}
-            >
+            <button key={d} onClick={() => onToggleDate(dateStr)}
+              className={`aspect-square flex items-center justify-center rounded-lg text-xs font-semibold transition ${isUnavail ? 'bg-red-500 text-white hover:bg-red-600' : isToday ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-700'}`}>
               {d}
             </button>
           );
@@ -179,570 +183,702 @@ function MiniCalendar({
   );
 }
 
-// ─── Per-Chamber Availability Panel ──────────────────────────────────────────
-
-const REASON_OPTIONS = ['Holiday', 'Personal', 'Conference', 'Training', 'Other'];
-
-function ChamberAvailabilityPanel({
-  avail,
-  onChange,
-}: {
-  avail: ChamberAvailability;
-  onChange: (a: ChamberAvailability) => void;
-}) {
+function ChamberAvailabilityPanel({ avail, onChange }: { avail: ChamberAvailability; onChange: (a: ChamberAvailability) => void }) {
   const [newDateReason, setNewDateReason] = useState('Holiday');
-
   const updateDay = (i: number, patch: Partial<DaySchedule>) => {
-    const schedule = [...avail.schedule];
-    schedule[i] = { ...schedule[i], ...patch };
+    const schedule = [...avail.schedule]; schedule[i] = { ...schedule[i], ...patch };
     onChange({ ...avail, schedule });
   };
-
   const toggleDate = (date: string) => {
     const exists = avail.unavailableDates.find((d) => d.date === date);
-    if (exists) {
-      onChange({ ...avail, unavailableDates: avail.unavailableDates.filter((d) => d.date !== date) });
-    } else {
-      onChange({ ...avail, unavailableDates: [...avail.unavailableDates, { date, reason: newDateReason }] });
-    }
+    onChange({ ...avail, unavailableDates: exists ? avail.unavailableDates.filter((d) => d.date !== date) : [...avail.unavailableDates, { date, reason: newDateReason }] });
   };
-
-  // Auto-calc total slots per active day
   const calcSlots = (open: string, close: string): number => {
-    if (!open || !close) return 0;
-    const [oh, om] = open.split(':').map(Number);
-    const [ch, cm] = close.split(':').map(Number);
-    const totalMin = (ch * 60 + cm) - (oh * 60 + om);
-    if (totalMin <= 0) return 0;
-    return Math.floor(totalMin / (avail.slotDuration + avail.slotGap));
+    const [oh, om] = open.split(':').map(Number); const [ch, cm] = close.split(':').map(Number);
+    const total = (ch * 60 + cm) - (oh * 60 + om);
+    return total <= 0 ? 0 : Math.floor(total / (avail.slotDuration + avail.slotGap));
   };
-
   return (
     <div className="space-y-6">
-      {/* Platform label for online */}
       {avail.isOnline && (
         <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
-          <Wifi className="w-4 h-4 text-blue-500" />
-          <span className="text-xs font-semibold text-blue-700">Platform: EmergentHealth Video Call</span>
+          <Wifi className="w-4 h-4 text-blue-500" /><span className="text-xs font-semibold text-blue-700">Platform: EmergentHealth Video Call</span>
         </div>
       )}
-
-      {/* Weekly schedule table */}
       <div>
         <SectionLabel>Weekly Schedule</SectionLabel>
         <div className="rounded-2xl border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase">Day</th>
-                <th className="text-center px-3 py-3 text-xs font-bold text-gray-400 uppercase">Active</th>
-                <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase">Open</th>
-                <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase">Close</th>
-                <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase">Max Pts</th>
-                <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase hidden sm:table-cell">Slots</th>
+            <thead><tr className="bg-gray-50 border-b border-gray-200">
+              <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase">Day</th>
+              <th className="text-center px-3 py-3 text-xs font-bold text-gray-400 uppercase">Active</th>
+              <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase">Open</th>
+              <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase">Close</th>
+              <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase">Max Pts</th>
+              <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase hidden sm:table-cell">Slots</th>
+            </tr></thead>
+            <tbody>{avail.schedule.map((row, i) => (
+              <tr key={row.day} className={`border-b border-gray-100 last:border-0 ${row.active ? 'bg-white' : 'bg-gray-50/60'}`}>
+                <td className="px-4 py-3"><span className={`text-sm font-semibold ${row.active ? 'text-gray-800' : 'text-gray-400'}`}>{row.day.slice(0, 3)}</span></td>
+                <td className="px-3 py-3 text-center"><input type="checkbox" checked={row.active} onChange={() => updateDay(i, { active: !row.active })} className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /></td>
+                <td className="px-3 py-3">{row.active ? <input type="time" value={row.open} onChange={(e) => updateDay(i, { open: e.target.value })} className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-24" /> : <span className="text-gray-300">—</span>}</td>
+                <td className="px-3 py-3">{row.active ? <input type="time" value={row.close} onChange={(e) => updateDay(i, { close: e.target.value })} className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-24" /> : <span className="text-gray-300">—</span>}</td>
+                <td className="px-3 py-3">{row.active ? <input type="number" min="1" max="100" value={row.maxPatients} onChange={(e) => updateDay(i, { maxPatients: e.target.value })} className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-16 text-center" /> : <span className="text-gray-300">—</span>}</td>
+                <td className="px-3 py-3 hidden sm:table-cell">{row.active && row.open && row.close ? <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{calcSlots(row.open, row.close)} slots</span> : <span className="text-gray-300">—</span>}</td>
               </tr>
-            </thead>
-            <tbody>
-              {avail.schedule.map((row, i) => (
-                <tr key={row.day}
-                  className={`border-b border-gray-100 last:border-0 transition ${row.active ? 'bg-white' : 'bg-gray-50/60'}`}>
-                  <td className="px-4 py-3">
-                    <span className={`text-sm font-semibold ${row.active ? 'text-gray-800' : 'text-gray-400'}`}>
-                      {row.day.slice(0, 3)}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 text-center">
-                    <input
-                      type="checkbox" checked={row.active}
-                      onChange={() => updateDay(i, { active: !row.active })}
-                      className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
-                    />
-                  </td>
-                  <td className="px-3 py-3">
-                    {row.active ? (
-                      <input type="time" value={row.open}
-                        onChange={(e) => updateDay(i, { open: e.target.value })}
-                        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-24"
-                      />
-                    ) : <span className="text-gray-300 text-sm">—</span>}
-                  </td>
-                  <td className="px-3 py-3">
-                    {row.active ? (
-                      <input type="time" value={row.close}
-                        onChange={(e) => updateDay(i, { close: e.target.value })}
-                        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-24"
-                      />
-                    ) : <span className="text-gray-300 text-sm">—</span>}
-                  </td>
-                  <td className="px-3 py-3">
-                    {row.active ? (
-                      <input type="number" min="1" max="100" value={row.maxPatients}
-                        onChange={(e) => updateDay(i, { maxPatients: e.target.value })}
-                        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-16 text-center"
-                      />
-                    ) : <span className="text-gray-300 text-sm">—</span>}
-                  </td>
-                  <td className="px-3 py-3 hidden sm:table-cell">
-                    {row.active && row.open && row.close ? (
-                      <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                        {calcSlots(row.open, row.close)} slots
-                      </span>
-                    ) : <span className="text-gray-300 text-sm">—</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            ))}</tbody>
           </table>
         </div>
       </div>
-
-      {/* Slot settings */}
       <div>
         <SectionLabel>Appointment Slot Settings</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <FieldLabel>Slot Duration</FieldLabel>
-            <div className="flex gap-2 flex-wrap">
-              {[10, 15, 20, 30].map((min) => (
-                <button key={min} type="button"
-                  onClick={() => onChange({ ...avail, slotDuration: min })}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${
-                    avail.slotDuration === min
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-100'
-                      : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600'
-                  }`}>
-                  {min} min
-                </button>
-              ))}
-            </div>
+            <div className="flex gap-2 flex-wrap">{[10,15,20,30].map((min) => <button key={min} type="button" onClick={() => onChange({ ...avail, slotDuration: min })} className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${avail.slotDuration === min ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-200 text-gray-600 hover:border-blue-300'}`}>{min} min</button>)}</div>
           </div>
           <div>
             <FieldLabel>Gap Between Slots</FieldLabel>
-            <div className="flex gap-2 flex-wrap">
-              {[0, 5, 10].map((min) => (
-                <button key={min} type="button"
-                  onClick={() => onChange({ ...avail, slotGap: min })}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${
-                    avail.slotGap === min
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-100'
-                      : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600'
-                  }`}>
-                  {min === 0 ? 'No gap' : `${min} min`}
-                </button>
-              ))}
-            </div>
+            <div className="flex gap-2 flex-wrap">{[0,5,10].map((min) => <button key={min} type="button" onClick={() => onChange({ ...avail, slotGap: min })} className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${avail.slotGap === min ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-200 text-gray-600 hover:border-blue-300'}`}>{min === 0 ? 'No gap' : `${min} min`}</button>)}</div>
           </div>
         </div>
         <div className="mt-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 flex items-center gap-2">
           <Clock className="w-3.5 h-3.5 text-blue-500 shrink-0" />
           <span className="text-xs text-blue-700 font-medium">
-            Auto-calculated: {(() => {
-              const active = avail.schedule.filter((s) => s.active && s.open && s.close);
-              const total = active.reduce((sum, row) => sum + calcSlots(row.open, row.close), 0);
-              return `${total} total slots/week across ${active.length} active days`;
-            })()}
+            {(() => { const active = avail.schedule.filter((s) => s.active && s.open && s.close); const total = active.reduce((sum, row) => sum + calcSlots(row.open, row.close), 0); return `${total} total slots/week across ${active.length} active days`; })()}
           </span>
         </div>
       </div>
-
-      {/* Unavailable dates */}
       <div>
         <SectionLabel>Mark Unavailable Dates</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-3">
             <div>
               <FieldLabel>Reason for unavailability</FieldLabel>
-              <select
-                value={newDateReason}
-                onChange={(e) => setNewDateReason(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-              >
-                {REASON_OPTIONS.map((r) => <option key={r}>{r}</option>)}
-              </select>
+              <select value={newDateReason} onChange={(e) => setNewDateReason(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">{REASON_OPTIONS.map((r) => <option key={r}>{r}</option>)}</select>
             </div>
-            <p className="text-xs text-gray-400">Click a date in the calendar to mark/unmark it as unavailable. The selected reason will be applied.</p>
-            <MiniCalendar
-              unavailableDates={avail.unavailableDates}
-              onToggleDate={toggleDate}
-            />
+            <p className="text-xs text-gray-400">Click a date to mark/unmark as unavailable.</p>
+            <MiniCalendar unavailableDates={avail.unavailableDates} onToggleDate={toggleDate} />
           </div>
           <div>
             <FieldLabel>Marked Dates</FieldLabel>
-            {avail.unavailableDates.length === 0 ? (
-              <div className="border border-dashed border-gray-200 rounded-2xl p-6 text-center text-xs text-gray-400">
-                No dates marked
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {[...avail.unavailableDates].sort((a, b) => a.date.localeCompare(b.date)).map(({ date, reason }) => (
-                  <div key={date} className="flex items-center justify-between gap-2 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
-                    <div>
-                      <p className="text-xs font-bold text-red-700">{date}</p>
-                      <p className="text-[10px] text-red-400">{reason}</p>
-                    </div>
-                    <button
-                      onClick={() => toggleDate(date)}
-                      className="p-1 rounded-lg text-red-300 hover:text-red-600 hover:bg-red-100 transition"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+            {avail.unavailableDates.length === 0 ? <div className="border border-dashed border-gray-200 rounded-2xl p-6 text-center text-xs text-gray-400">No dates marked</div> : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">{[...avail.unavailableDates].sort((a, b) => a.date.localeCompare(b.date)).map(({ date, reason }) => (
+                <div key={date} className="flex items-center justify-between gap-2 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
+                  <div><p className="text-xs font-bold text-red-700">{date}</p><p className="text-[10px] text-red-400">{reason}</p></div>
+                  <button onClick={() => toggleDate(date)} className="p-1 rounded-lg text-red-300 hover:text-red-600 hover:bg-red-100 transition"><X className="w-3.5 h-3.5" /></button>
+                </div>
+              ))}</div>
             )}
           </div>
         </div>
       </div>
-
-      {/* Holiday mode */}
       <div>
         <SectionLabel>Holiday Mode</SectionLabel>
         <div className="border border-orange-200 rounded-2xl p-5 bg-orange-50 space-y-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-bold text-gray-800">Enable Holiday Mode</p>
-              <p className="text-xs text-gray-500 mt-0.5">Pause all bookings for a date range</p>
-            </div>
+            <div><p className="text-sm font-bold text-gray-800">Enable Holiday Mode</p><p className="text-xs text-gray-500 mt-0.5">Pause all bookings for a date range</p></div>
             <Toggle checked={avail.holidayMode} onChange={() => onChange({ ...avail, holidayMode: !avail.holidayMode })} />
           </div>
-          {avail.holidayMode && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <FieldLabel>From</FieldLabel>
-                  <input type="date" value={avail.holidayFrom}
-                    onChange={(e) => onChange({ ...avail, holidayFrom: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                  />
-                </div>
-                <div>
-                  <FieldLabel>To</FieldLabel>
-                  <input type="date" value={avail.holidayTo}
-                    onChange={(e) => onChange({ ...avail, holidayTo: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                  />
-                </div>
-              </div>
-              <div>
-                <FieldLabel>Reason</FieldLabel>
-                <textarea rows={2} value={avail.holidayReason}
-                  onChange={(e) => onChange({ ...avail, holidayReason: e.target.value })}
-                  placeholder="e.g. Attending medical conference in Singapore…"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <div className="flex items-start gap-2 bg-orange-100 border border-orange-200 rounded-xl px-3.5 py-2.5">
-                <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-orange-700 font-medium">
-                  All appointments in this period will be notified automatically.
-                </p>
-              </div>
-            </>
-          )}
+          {avail.holidayMode && (<>
+            <div className="grid grid-cols-2 gap-3">
+              <div><FieldLabel>From</FieldLabel><input type="date" value={avail.holidayFrom} onChange={(e) => onChange({ ...avail, holidayFrom: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" /></div>
+              <div><FieldLabel>To</FieldLabel><input type="date" value={avail.holidayTo} onChange={(e) => onChange({ ...avail, holidayTo: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" /></div>
+            </div>
+            <div><FieldLabel>Reason</FieldLabel><textarea rows={2} value={avail.holidayReason} onChange={(e) => onChange({ ...avail, holidayReason: e.target.value })} placeholder="e.g. Attending medical conference…" className="w-full px-3.5 py-2.5 rounded-xl border border-orange-200 bg-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400" /></div>
+            <div className="flex items-start gap-2 bg-orange-100 border border-orange-200 rounded-xl px-3.5 py-2.5"><AlertTriangle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" /><p className="text-xs text-orange-700 font-medium">All appointments in this period will be notified automatically.</p></div>
+          </>)}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Main Settings Page ───────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('personal');
 
-  // Personal
+  // ── Personal
   const [name, setName] = useState('Dr. Rahim Uddin');
   const [email, setEmail] = useState('dr.rahim@email.com');
   const [phone, setPhone] = useState('1712345678');
+  const [gender, setGender] = useState<'Male' | 'Female'>('Male');
+  const [dob, setDob] = useState('1982-05-15');
   const [bio, setBio] = useState('Experienced Cardiologist with over 12 years of practice.');
+  const [longBio, setLongBio] = useState('Dr. Rahim Uddin is a distinguished Cardiologist with over 12 years of experience in the management of complex cardiovascular conditions. He completed his MBBS from Dhaka Medical College and his MD in Cardiology from NICVD. He has trained at leading cardiac centres in India and the UK. He is known for his patient-centred approach and evidence-based practice. He currently practices at Green Life Medical Centre, Dhanmondi.');
+  const [languages, setLanguages] = useState(['Bangla', 'English']);
 
-  // Chambers
+  // ── Professional
+  const [specialty, setSpecialty] = useState('Cardiologist');
+  const [concentration, setConcentration] = useState(['Interventional Cardiology', 'Heart Failure', 'Echocardiography']);
+  const [publications, setPublications] = useState<Publication[]>([
+    { id: 1, title: 'Outcomes of PTCA in Bangladeshi Patients', journal: 'Bangladesh Heart Journal', year: '2022', url: '' },
+  ]);
+  const [awards, setAwards] = useState<Award[]>([
+    { id: 1, name: 'Best Young Cardiologist Award', org: 'Bangladesh Cardiac Society', year: '2020' },
+  ]);
+
+  // ── Chambers
   const [chambers, setChambers] = useState<ChamberData[]>([
     { id: 'ch1', name: 'Dhanmondi Chamber', address: 'House 32, Road 7, Dhanmondi', city: 'Dhaka', phone: '02-8612345', newFee: '800', followFee: '500', online: true, onlineNewFee: '600', onlineFollowFee: '400' },
     { id: 'ch2', name: 'Popular Chamber', address: 'Shyamoli, Dhaka', city: 'Dhaka', phone: '02-9101234', newFee: '1000', followFee: '600', online: false, onlineNewFee: '', onlineFollowFee: '' },
   ]);
 
-  // Per-chamber availability (including online)
-  const buildInitialAvailability = (chs: ChamberData[]): ChamberAvailability[] => {
-    const result = chs.map((c) => defaultChamberAvailability(c.id, c.name));
-    const hasOnline = chs.some((c) => c.online);
-    if (hasOnline) result.push(defaultChamberAvailability('online', 'Online', true));
+  // ── Availability
+  const buildAvail = (chs: ChamberData[]) => {
+    const result = chs.map((c) => defaultChamberAvail(c.id, c.name));
+    if (chs.some((c) => c.online)) result.push(defaultChamberAvail('online', 'Online', true));
     return result;
   };
-
-  const [availabilities, setAvailabilities] = useState<ChamberAvailability[]>(() => buildInitialAvailability(chambers));
+  const [availabilities, setAvailabilities] = useState<ChamberAvailability[]>(() => buildAvail(chambers));
   const [activeAvailTab, setActiveAvailTab] = useState('ch1');
 
-  const updateAvail = (updated: ChamberAvailability) => {
-    setAvailabilities((prev) => prev.map((a) => a.chamberId === updated.chamberId ? updated : a));
-  };
-
-  const currentAvail = availabilities.find((a) => a.chamberId === activeAvailTab) ?? availabilities[0];
-
-  // Sync chambers → availability tabs when chambers change
-  const updateChambers = (updatedChambers: ChamberData[]) => {
-    setChambers(updatedChambers);
+  const updateChambers = (updated: ChamberData[]) => {
+    setChambers(updated);
     setAvailabilities((prev) => {
-      const newAvail: ChamberAvailability[] = updatedChambers.map((c) => {
-        const existing = prev.find((a) => a.chamberId === c.id);
-        return existing ? { ...existing, chamberName: c.name } : defaultChamberAvailability(c.id, c.name);
-      });
-      const hasOnline = updatedChambers.some((c) => c.online);
-      if (hasOnline) {
-        const existing = prev.find((a) => a.chamberId === 'online');
-        newAvail.push(existing ?? defaultChamberAvailability('online', 'Online', true));
-      }
-      return newAvail;
+      const next = updated.map((c) => { const e = prev.find((a) => a.chamberId === c.id); return e ? { ...e, chamberName: c.name } : defaultChamberAvail(c.id, c.name); });
+      if (updated.some((c) => c.online)) { const e = prev.find((a) => a.chamberId === 'online'); next.push(e ?? defaultChamberAvail('online', 'Online', true)); }
+      return next;
     });
   };
+  const currentAvail = availabilities.find((a) => a.chamberId === activeAvailTab) ?? availabilities[0];
 
-  // Booking
+  // ── Booking
   const [onlineBooking, setOnlineBooking] = useState(true);
   const [autoConfirm, setAutoConfirm] = useState(false);
-  const [maxPatients, setMaxPatients] = useState('20');
+  const [maxPatientsGlobal, setMaxPatientsGlobal] = useState('20');
   const [apptGap, setApptGap] = useState('30');
 
-  // Notifications
+  // ── Notifications
   const [sms, setSms] = useState(true);
   const [emailNotif, setEmailNotif] = useState(true);
   const [newApptAlert, setNewApptAlert] = useState(true);
 
+  // ── Reviews
+  const [reviewsTab, setReviewsTab] = useState<'reviews' | 'qa'>('reviews');
+  const [reviews, setReviews] = useState<Review[]>([
+    { id: 1, patient: 'K***m H.', rating: 5, comment: 'Excellent doctor. Very thorough and caring.', date: '28 Jun 2026', reply: '' },
+    { id: 2, patient: 'F***a B.', rating: 4, comment: 'Very professional and explained everything clearly.', date: '25 Jun 2026', reply: '' },
+    { id: 3, patient: 'R***q A.', rating: 5, comment: 'Best cardiologist I have been to. Highly recommended!', date: '20 Jun 2026', reply: 'Thank you for your kind words.' },
+    { id: 4, patient: 'N***n A.', rating: 3, comment: 'Good doctor but long waiting time.', date: '18 Jun 2026', reply: '' },
+  ]);
+  const [replyDraft, setReplyDraft] = useState<Record<number, string>>({});
+  const [replyOpen, setReplyOpen] = useState<number | null>(null);
+
+  const [qas, setQas] = useState<QA[]>([
+    { id: 1, question: 'What is the difference between angina and heart attack?', answer: 'Angina is chest pain caused by reduced blood flow, while a heart attack is when blood flow is completely blocked.', asker: 'A***f M.', date: '29 Jun 2026', answered: true },
+    { id: 2, question: 'Is it safe to exercise with mild hypertension?', answer: 'Yes, moderate exercise is generally safe and beneficial with mild hypertension. Always consult your doctor.', asker: 'S***a K.', date: '27 Jun 2026', answered: true },
+    { id: 3, question: 'What foods should I avoid with high cholesterol?', answer: '', asker: 'T***l R.', date: '30 Jun 2026', answered: false },
+    { id: 4, question: 'How often should I get my ECG done?', answer: '', asker: 'P***y S.', date: '1 Jul 2026', answered: false },
+  ]);
+  const [qaEditId, setQaEditId] = useState<number | null>(null);
+  const [qaEditText, setQaEditText] = useState('');
+  const [qaAnswerDraft, setQaAnswerDraft] = useState<Record<number, string>>({});
+  const unanswered = qas.filter((q) => !q.answered).length;
+
   return (
     <DoctorLayout>
-      <div className="p-4 sm:p-6 max-w-[1000px]">
+      <div className="p-4 sm:p-6 max-w-[1050px]">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900">Settings</h2>
           <p className="text-sm text-gray-500 mt-0.5">Manage your profile and preferences</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-5">
-          {/* Tab list */}
-          <div className="sm:w-48 shrink-0">
+          {/* Sidebar */}
+          <div className="sm:w-52 shrink-0">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-2 space-y-0.5 sm:sticky sm:top-20">
               {TABS_LIST.map(({ id, label, icon: Icon }) => (
                 <button key={id} onClick={() => setActiveTab(id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
-                    activeTab === id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-                  }`}>
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="text-left leading-tight">{label}</span>
+                  className={`w-full flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  <div className="flex items-center gap-2.5">
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="text-left leading-tight">{label}</span>
+                  </div>
+                  {id === 'reviews' && unanswered > 0 && (
+                    <span className={`text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${activeTab === id ? 'bg-white text-blue-600' : 'bg-red-500 text-white'}`}>{unanswered}</span>
+                  )}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Content panel */}
-          <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          {/* Content */}
+          <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6 min-w-0">
 
-            {/* ── Personal ── */}
-            {activeTab === 'personal' && (
-              <>
-                <SectionLabel>Personal Information</SectionLabel>
-                <div className="flex items-center gap-5 mb-2">
-                  <img src="https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg?auto=compress&cs=tinysrgb&w=150"
-                    alt="" className="w-20 h-20 rounded-full object-cover border-2 border-gray-100 shadow" />
-                  <div>
-                    <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition">Change Photo</button>
-                    <p className="text-xs text-gray-400 mt-1">JPG or PNG · Max 5MB</p>
-                  </div>
+            {/* ══════════════ PERSONAL INFO ══════════════ */}
+            {activeTab === 'personal' && (<>
+              <SectionLabel>Personal Information</SectionLabel>
+              {/* Photo */}
+              <div className="flex items-center gap-5">
+                <img src="https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-20 h-20 rounded-full object-cover border-2 border-gray-100 shadow" />
+                <div>
+                  <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition">Change Photo</button>
+                  <p className="text-xs text-gray-400 mt-1">JPG or PNG · Max 5MB</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><FieldLabel>Full Name</FieldLabel><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-                  <div><FieldLabel>Email</FieldLabel><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                  <div><FieldLabel>Phone</FieldLabel><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><FieldLabel>Full Name</FieldLabel><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+                <div><FieldLabel>Email</FieldLabel><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+                <div><FieldLabel>Phone</FieldLabel><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+                <div><FieldLabel>Date of Birth</FieldLabel><Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} /></div>
+              </div>
+              {/* Gender */}
+              <div>
+                <FieldLabel>Gender</FieldLabel>
+                <div className="flex gap-4">
+                  {(['Male', 'Female'] as const).map((g) => (
+                    <label key={g} className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="gender" checked={gender === g} onChange={() => setGender(g)} className="accent-blue-600 w-4 h-4" />
+                      <span className="text-sm font-semibold text-gray-700">{g}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {/* Languages */}
+              <div>
+                <FieldLabel note="Press Enter or comma to add">Languages Spoken</FieldLabel>
+                <TagsInput tags={languages} onAdd={(t) => setLanguages([...languages, t])} onRemove={(t) => setLanguages(languages.filter((l) => l !== t))} placeholder="e.g. Bangla, English…" />
+              </div>
+              {/* Short bio */}
+              <div>
+                <FieldLabel note="Shown on doctor cards and search results">Short Bio</FieldLabel>
+                <textarea rows={2} value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p className="text-[11px] text-gray-400 text-right mt-1">{bio.length}/200</p>
+              </div>
+              {/* Long bio */}
+              <div>
+                <FieldLabel note="Shown on your full doctor profile page">Full Profile Bio</FieldLabel>
+                <textarea rows={6} value={longBio} onChange={(e) => setLongBio(e.target.value.slice(0, 1000))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p className="text-[11px] text-gray-400 text-right mt-1">{longBio.length}/1000</p>
+                {!bio && longBio && (
+                  <button onClick={() => setBio(longBio.slice(0, 150))} className="text-[11px] text-blue-600 hover:text-blue-800 transition mt-1">
+                    Auto-fill Short Bio from first 150 characters
+                  </button>
+                )}
+              </div>
+              <SaveButton />
+            </>)}
+
+            {/* ══════════════ PROFESSIONAL ══════════════ */}
+            {activeTab === 'professional' && (<>
+              <SectionLabel>Professional Information</SectionLabel>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><FieldLabel>Medical Degree</FieldLabel><Input defaultValue="MBBS" /></div>
+                <div><FieldLabel>Additional Degrees</FieldLabel><Input defaultValue="MD (Cardiology)" /></div>
+                <div>
+                  <FieldLabel>Specialty</FieldLabel>
+                  <select value={specialty} onChange={(e) => setSpecialty(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                    {['General Physician','Cardiologist','Pediatrician','Dermatologist','Neurologist','Orthopedic','Gynecologist','Eye Specialist','Psychiatrist','Dentist'].map((s) => <option key={s}>{s}</option>)}
+                  </select>
                 </div>
                 <div>
-                  <FieldLabel>Short Bio</FieldLabel>
-                  <textarea rows={4} value={bio} onChange={(e) => setBio(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <FieldLabel note="Contact admin to update BMDC number">BMDC Registration No.</FieldLabel>
+                  <Input defaultValue="A-12345" readOnly className="bg-gray-50 text-gray-400 cursor-not-allowed" />
                 </div>
-                <SaveButton />
-              </>
-            )}
+                <div><FieldLabel>Years of Experience</FieldLabel><Input type="number" defaultValue="12" /></div>
+                <div><FieldLabel>Current Hospital</FieldLabel><Input defaultValue="Green Life Medical Centre" /></div>
+              </div>
+              {/* Concentration tags */}
+              <div>
+                <FieldLabel note="Press Enter or comma to add">Field of Concentration</FieldLabel>
+                <TagsInput tags={concentration} onAdd={(t) => setConcentration([...concentration, t])} onRemove={(t) => setConcentration(concentration.filter((c) => c !== t))} placeholder="e.g. Stroke, Epilepsy…" color="purple" />
+              </div>
 
-            {/* ── Professional ── */}
-            {activeTab === 'professional' && (
-              <>
-                <SectionLabel>Professional Information</SectionLabel>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><FieldLabel>Medical Degree</FieldLabel><Input defaultValue="MBBS" /></div>
-                  <div><FieldLabel>Additional Degrees</FieldLabel><Input defaultValue="MD (Cardiology)" /></div>
-                  <div>
-                    <FieldLabel>Specialty</FieldLabel>
-                    <Select defaultValue="Cardiologist">
-                      {['General Physician','Cardiologist','Pediatrician','Dermatologist','Neurologist','Orthopedic','Gynecologist','Eye Specialist','Psychiatrist','Dentist'].map((s) => <option key={s}>{s}</option>)}
-                    </Select>
+              <div className="border-t border-gray-100 pt-5">
+                <div className="flex items-center justify-between mb-3">
+                  <SectionLabel>Research & Publications</SectionLabel>
+                  {publications.length < 10 && (
+                    <button onClick={() => setPublications([...publications, { id: Date.now(), title: '', journal: '', year: '', url: '' }])}
+                      className="text-xs font-bold text-blue-600 flex items-center gap-1 hover:text-blue-800 transition">
+                      <Plus className="w-3.5 h-3.5" /> Add
+                    </button>
+                  )}
+                </div>
+                {publications.length === 0 ? (
+                  <div className="border border-dashed border-gray-200 rounded-2xl p-5 text-center text-xs text-gray-400">No publications added</div>
+                ) : (
+                  <div className="space-y-3">
+                    {publications.map((pub, i) => (
+                      <div key={pub.id} className="border border-gray-200 rounded-2xl p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-400">Publication {i + 1}</span>
+                          <button onClick={() => setPublications(publications.filter((p) => p.id !== pub.id))} className="text-gray-300 hover:text-red-500 transition"><X className="w-4 h-4" /></button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="sm:col-span-2"><FieldLabel>Title</FieldLabel><Input value={pub.title} onChange={(e) => setPublications(publications.map((p) => p.id === pub.id ? { ...p, title: e.target.value } : p))} placeholder="Publication title" /></div>
+                          <div><FieldLabel>Journal</FieldLabel><Input value={pub.journal} onChange={(e) => setPublications(publications.map((p) => p.id === pub.id ? { ...p, journal: e.target.value } : p))} placeholder="Journal name" /></div>
+                          <div><FieldLabel>Year</FieldLabel><Input type="number" value={pub.year} onChange={(e) => setPublications(publications.map((p) => p.id === pub.id ? { ...p, year: e.target.value } : p))} placeholder="2024" /></div>
+                          <div className="sm:col-span-2"><FieldLabel>Link / URL (optional)</FieldLabel><Input type="url" value={pub.url} onChange={(e) => setPublications(publications.map((p) => p.id === pub.id ? { ...p, url: e.target.value } : p))} placeholder="https://…" /></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div><FieldLabel>BMDC Registration No.</FieldLabel><Input defaultValue="A-12345" /></div>
-                  <div><FieldLabel>Years of Experience</FieldLabel><Input type="number" defaultValue="12" /></div>
-                  <div><FieldLabel>Current Hospital</FieldLabel><Input defaultValue="Green Life Medical Centre" /></div>
-                </div>
-                <SaveButton />
-              </>
-            )}
+                )}
+              </div>
 
-            {/* ── Chamber ── */}
-            {activeTab === 'chamber' && (
-              <>
-                <SectionLabel>Chamber Settings</SectionLabel>
-                <div className="space-y-5">
-                  {chambers.map((ch, i) => (
-                    <div key={ch.id} className="border border-gray-200 rounded-2xl p-4 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-gray-800">Chamber {i + 1}</p>
-                        {chambers.length > 1 && (
-                          <button onClick={() => updateChambers(chambers.filter((c) => c.id !== ch.id))}
-                            className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 transition">
-                            <X className="w-3.5 h-3.5" /> Remove
+              <div className="border-t border-gray-100 pt-5">
+                <div className="flex items-center justify-between mb-3">
+                  <SectionLabel>Awards & Recognition</SectionLabel>
+                  {awards.length < 10 && (
+                    <button onClick={() => setAwards([...awards, { id: Date.now(), name: '', org: '', year: '' }])}
+                      className="text-xs font-bold text-blue-600 flex items-center gap-1 hover:text-blue-800 transition">
+                      <Plus className="w-3.5 h-3.5" /> Add
+                    </button>
+                  )}
+                </div>
+                {awards.length === 0 ? (
+                  <div className="border border-dashed border-gray-200 rounded-2xl p-5 text-center text-xs text-gray-400">No awards added</div>
+                ) : (
+                  <div className="space-y-3">
+                    {awards.map((aw, i) => (
+                      <div key={aw.id} className="border border-gray-200 rounded-2xl p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-400">Award {i + 1}</span>
+                          <button onClick={() => setAwards(awards.filter((a) => a.id !== aw.id))} className="text-gray-300 hover:text-red-500 transition"><X className="w-4 h-4" /></button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="sm:col-span-2"><FieldLabel>Award Name</FieldLabel><Input value={aw.name} onChange={(e) => setAwards(awards.map((a) => a.id === aw.id ? { ...a, name: e.target.value } : a))} placeholder="Award name" /></div>
+                          <div><FieldLabel>Year</FieldLabel><Input type="number" value={aw.year} onChange={(e) => setAwards(awards.map((a) => a.id === aw.id ? { ...a, year: e.target.value } : a))} placeholder="2024" /></div>
+                          <div className="sm:col-span-3"><FieldLabel>Organization</FieldLabel><Input value={aw.org} onChange={(e) => setAwards(awards.map((a) => a.id === aw.id ? { ...a, org: e.target.value } : a))} placeholder="Awarding organization" /></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <SaveButton />
+            </>)}
+
+            {/* ══════════════ VERIFICATION ══════════════ */}
+            {activeTab === 'verification' && (<>
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldCheck className="w-5 h-5 text-blue-600" />
+                <h3 className="text-base font-bold text-gray-900">Verification Status</h3>
+              </div>
+              <p className="text-xs text-gray-400 mb-5">Verification is controlled by the admin team. Contact admin for any issues.</p>
+
+              {/* Progress */}
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-5">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-bold text-gray-800">Overall Profile Status</p>
+                  <span className="text-sm font-black text-blue-600">3 of 4 complete</span>
+                </div>
+                <div className="h-2.5 bg-blue-100 rounded-full overflow-hidden mb-1">
+                  <div className="h-full bg-blue-600 rounded-full" style={{ width: '75%' }} />
+                </div>
+                <p className="text-xs text-gray-500">Complete all verifications to unlock full profile visibility.</p>
+              </div>
+
+              <div className="space-y-4">
+                {/* BMDC */}
+                <div className="border border-gray-200 rounded-2xl p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">BMDC Verification</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Submitted: BMDC #A-12345</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Verified on: 15 Jan 2024</p>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200">
+                      <BadgeCheck className="w-3.5 h-3.5" /> Verified
+                    </span>
+                  </div>
+                </div>
+
+                {/* NID */}
+                <div className="border border-gray-200 rounded-2xl p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">Identity Verification</p>
+                      <p className="text-xs text-gray-500 mt-0.5">NID: ****5678 (submitted)</p>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200">
+                      <BadgeCheck className="w-3.5 h-3.5" /> Verified
+                    </span>
+                  </div>
+                </div>
+
+                {/* Chamber verification */}
+                <div className="border border-gray-200 rounded-2xl p-4">
+                  <p className="text-sm font-bold text-gray-800 mb-3">Chamber Verification</p>
+                  <p className="text-xs text-gray-400 mb-3">Admin visits chamber to verify. This may take 3–5 business days.</p>
+                  <div className="space-y-2.5">
+                    {[
+                      { name: 'Dhanmondi Chamber', status: 'Verified' },
+                      { name: 'Popular Chamber', status: 'Pending' },
+                    ].map(({ name, status }) => (
+                      <div key={name} className="flex items-center justify-between bg-gray-50 rounded-xl px-3.5 py-2.5">
+                        <span className="text-sm text-gray-700 font-medium">{name}</span>
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${status === 'Verified' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
+                          {status === 'Verified' ? <BadgeCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />} {status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Photo */}
+                <div className="border border-gray-200 rounded-2xl p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">Profile Photo Review</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Photo must be professional and clear</p>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                      <Clock className="w-3.5 h-3.5" /> Pending Review
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-sm font-semibold text-gray-700 mb-2">Need help with verification?</p>
+                <a href="mailto:admin@emergentHealth.com" className="inline-flex items-center gap-2 px-5 py-2.5 border border-blue-200 text-blue-600 text-sm font-bold rounded-xl hover:bg-blue-50 transition">
+                  Contact Admin
+                </a>
+              </div>
+            </>)}
+
+            {/* ══════════════ CHAMBER SETTINGS ══════════════ */}
+            {activeTab === 'chamber' && (<>
+              <SectionLabel>Chamber Settings</SectionLabel>
+              <div className="space-y-5">
+                {chambers.map((ch, i) => (
+                  <div key={ch.id} className="border border-gray-200 rounded-2xl p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-bold text-gray-800">Chamber {i + 1}</p>
+                      {chambers.length > 1 && <button onClick={() => updateChambers(chambers.filter((c) => c.id !== ch.id))} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"><X className="w-3.5 h-3.5" /> Remove</button>}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="sm:col-span-2"><FieldLabel>Chamber Name</FieldLabel><Input value={ch.name} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, name: e.target.value } : c))} /></div>
+                      <div className="sm:col-span-2"><FieldLabel>Address</FieldLabel><Input value={ch.address} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, address: e.target.value } : c))} /></div>
+                      <div><FieldLabel>City</FieldLabel>
+                        <select value={ch.city} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, city: e.target.value } : c))} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">{CITIES.map((city) => <option key={city}>{city}</option>)}</select>
+                      </div>
+                      <div><FieldLabel>Phone</FieldLabel><Input value={ch.phone} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, phone: e.target.value } : c))} /></div>
+                      <div><FieldLabel>New Patient Fee (৳)</FieldLabel><Input type="number" value={ch.newFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, newFee: e.target.value } : c))} /></div>
+                      <div><FieldLabel>Follow-up Fee (৳)</FieldLabel><Input type="number" value={ch.followFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, followFee: e.target.value } : c))} /></div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                      <span className="text-sm font-semibold text-gray-700">Enable Online Consultation</span>
+                      <Toggle checked={ch.online} onChange={() => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, online: !c.online } : c))} />
+                    </div>
+                    {ch.online && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><FieldLabel>Online New Patient Fee (৳)</FieldLabel><Input type="number" value={ch.onlineNewFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, onlineNewFee: e.target.value } : c))} /></div>
+                        <div><FieldLabel>Online Follow-up Fee (৳)</FieldLabel><Input type="number" value={ch.onlineFollowFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, onlineFollowFee: e.target.value } : c))} /></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {chambers.length < 3 && (
+                  <button onClick={() => updateChambers([...chambers, { id: `ch${Date.now()}`, name: '', address: '', city: 'Dhaka', phone: '', newFee: '', followFee: '', online: false, onlineNewFee: '', onlineFollowFee: '' }])}
+                    className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-semibold text-gray-400 hover:border-blue-400 hover:text-blue-600 transition flex items-center justify-center gap-2">
+                    <Plus className="w-4 h-4" /> Add Chamber
+                  </button>
+                )}
+              </div>
+              <SaveButton />
+            </>)}
+
+            {/* ══════════════ AVAILABILITY ══════════════ */}
+            {activeTab === 'availability' && (<>
+              <h3 className="text-base font-bold text-gray-900 mb-4">Availability</h3>
+              <div className="flex gap-1.5 flex-wrap border-b border-gray-100 pb-3 mb-5">
+                {availabilities.map((a) => (
+                  <button key={a.chamberId} onClick={() => setActiveAvailTab(a.chamberId)}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition ${activeAvailTab === a.chamberId ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    {a.isOnline ? <Wifi className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
+                    {a.isOnline ? 'Online' : a.chamberName || `Chamber ${availabilities.indexOf(a) + 1}`}
+                  </button>
+                ))}
+              </div>
+              {currentAvail && <ChamberAvailabilityPanel key={currentAvail.chamberId} avail={currentAvail} onChange={(u) => setAvailabilities((prev) => prev.map((a) => a.chamberId === u.chamberId ? u : a))} />}
+              <div className="pt-4 border-t border-gray-100 mt-2">
+                <SaveButton label={`Save ${currentAvail?.isOnline ? 'Online' : currentAvail?.chamberName ?? 'Chamber'} Schedule`} />
+              </div>
+            </>)}
+
+            {/* ══════════════ BOOKING ══════════════ */}
+            {activeTab === 'booking' && (<>
+              <SectionLabel>Booking Settings</SectionLabel>
+              <div className="space-y-4">
+                {[
+                  { label: 'Enable Online Booking', desc: 'Allow patients to book appointments online', val: onlineBooking, set: () => setOnlineBooking(!onlineBooking) },
+                  { label: 'Auto-confirm Appointments', desc: 'Automatically confirm new bookings without manual review', val: autoConfirm, set: () => setAutoConfirm(!autoConfirm) },
+                ].map(({ label, desc, val, set }) => (
+                  <div key={label} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                    <div><p className="text-sm font-bold text-gray-800">{label}</p><p className="text-xs text-gray-500 mt-0.5">{desc}</p></div>
+                    <Toggle checked={val} onChange={set} />
+                  </div>
+                ))}
+                <div className="grid grid-cols-2 gap-4">
+                  <div><FieldLabel>Max Patients Per Day</FieldLabel><Input type="number" value={maxPatientsGlobal} onChange={(e) => setMaxPatientsGlobal(e.target.value)} /></div>
+                  <div><FieldLabel>Appointment Gap (minutes)</FieldLabel><Input type="number" value={apptGap} onChange={(e) => setApptGap(e.target.value)} /></div>
+                </div>
+              </div>
+              <SaveButton />
+            </>)}
+
+            {/* ══════════════ NOTIFICATIONS ══════════════ */}
+            {activeTab === 'notifications' && (<>
+              <SectionLabel>Notification Preferences</SectionLabel>
+              <div className="space-y-3">
+                {[
+                  { label: 'SMS Notifications', desc: 'Receive alerts via SMS', val: sms, set: () => setSms(!sms) },
+                  { label: 'Email Notifications', desc: 'Receive alerts via email', val: emailNotif, set: () => setEmailNotif(!emailNotif) },
+                  { label: 'New Appointment Alert', desc: 'Get notified when a new booking arrives', val: newApptAlert, set: () => setNewApptAlert(!newApptAlert) },
+                ].map(({ label, desc, val, set }) => (
+                  <div key={label} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                    <div><p className="text-sm font-bold text-gray-800">{label}</p><p className="text-xs text-gray-500 mt-0.5">{desc}</p></div>
+                    <Toggle checked={val} onChange={set} />
+                  </div>
+                ))}
+              </div>
+              <SaveButton />
+            </>)}
+
+            {/* ══════════════ REVIEWS & Q&A ══════════════ */}
+            {activeTab === 'reviews' && (<>
+              {/* Sub-tabs */}
+              <div className="flex gap-1.5 border-b border-gray-100 pb-3 mb-5">
+                <button onClick={() => setReviewsTab('reviews')}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${reviewsTab === 'reviews' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  Reviews ({reviews.length})
+                </button>
+                <button onClick={() => setReviewsTab('qa')}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition ${reviewsTab === 'qa' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  Q&A ({qas.length})
+                  {unanswered > 0 && <span className={`text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center ${reviewsTab === 'qa' ? 'bg-white text-blue-600' : 'bg-red-500 text-white'}`}>{unanswered}</span>}
+                </button>
+              </div>
+
+              {/* Reviews */}
+              {reviewsTab === 'reviews' && (
+                <div className="space-y-4">
+                  <p className="text-xs text-gray-400">Patient reviews cannot be edited or deleted. You may reply or report inappropriate reviews.</p>
+                  {reviews.map((r) => (
+                    <div key={r.id} className="border border-gray-200 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-bold text-gray-800">{r.patient}</span>
+                            <Stars rating={r.rating} />
+                          </div>
+                          <p className="text-sm text-gray-600">{r.comment}</p>
+                          <p className="text-xs text-gray-400 mt-1">{r.date}</p>
+                        </div>
+                        <button className="shrink-0 p-1.5 rounded-lg text-gray-300 hover:text-orange-500 hover:bg-orange-50 transition" title="Report">
+                          <Flag className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      {/* Existing reply */}
+                      {r.reply && (
+                        <div className="bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5">
+                          <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Your Reply</p>
+                          <p className="text-xs text-gray-700">{r.reply}</p>
+                        </div>
+                      )}
+                      {/* Reply box */}
+                      {replyOpen === r.id ? (
+                        <div className="space-y-2">
+                          <textarea rows={2} value={replyDraft[r.id] ?? ''}
+                            onChange={(e) => setReplyDraft((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                            placeholder="Write your reply…"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                          <div className="flex gap-2">
+                            <button onClick={() => { setReviews(reviews.map((rv) => rv.id === r.id ? { ...rv, reply: replyDraft[r.id] ?? '' } : rv)); setReplyOpen(null); }}
+                              className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition">
+                              Post Reply
+                            </button>
+                            <button onClick={() => setReplyOpen(null)} className="px-4 py-2 text-gray-500 text-xs font-semibold rounded-lg hover:bg-gray-100 transition">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button onClick={() => { setReplyOpen(r.id); setReplyDraft((prev) => ({ ...prev, [r.id]: r.reply })); }}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition">
+                          <MessageSquare className="w-3.5 h-3.5" /> {r.reply ? 'Edit Reply' : 'Reply'}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Q&A */}
+              {reviewsTab === 'qa' && (
+                <div className="space-y-4">
+                  {unanswered > 0 && (
+                    <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-xl px-3.5 py-2.5">
+                      <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />
+                      <span className="text-xs font-semibold text-orange-700">{unanswered} unanswered question{unanswered > 1 ? 's' : ''} — reply to help your patients</span>
+                    </div>
+                  )}
+                  {qas.map((qa) => (
+                    <div key={qa.id} className={`border rounded-2xl p-4 space-y-3 ${qa.answered ? 'border-gray-200' : 'border-orange-200 bg-orange-50/30'}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">{qa.question}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{qa.asker} · {qa.date}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0 ${qa.answered ? 'bg-green-50 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                          {qa.answered ? 'Answered' : 'Unanswered'}
+                        </span>
+                      </div>
+                      {/* Answer */}
+                      {qa.answered && qaEditId !== qa.id && (
+                        <div className="bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5">
+                          <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Your Answer</p>
+                          <p className="text-xs text-gray-700">{qa.answer}</p>
+                        </div>
+                      )}
+                      {/* Edit answer */}
+                      {qaEditId === qa.id && (
+                        <div className="space-y-2">
+                          <textarea rows={3} value={qaEditText}
+                            onChange={(e) => setQaEditText(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-blue-300 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                          <div className="flex gap-2">
+                            <button onClick={() => { setQas(qas.map((q) => q.id === qa.id ? { ...q, answer: qaEditText, answered: true } : q)); setQaEditId(null); }}
+                              className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition">Save</button>
+                            <button onClick={() => setQaEditId(null)} className="px-4 py-2 text-gray-500 text-xs font-semibold rounded-lg hover:bg-gray-100 transition">Cancel</button>
+                          </div>
+                        </div>
+                      )}
+                      {/* Unanswered: answer box */}
+                      {!qa.answered && qaEditId !== qa.id && (
+                        <div className="space-y-2">
+                          <textarea rows={2} value={qaAnswerDraft[qa.id] ?? ''}
+                            onChange={(e) => setQaAnswerDraft((prev) => ({ ...prev, [qa.id]: e.target.value }))}
+                            placeholder="Write your answer…"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                          <button onClick={() => { if (qaAnswerDraft[qa.id]?.trim()) { setQas(qas.map((q) => q.id === qa.id ? { ...q, answer: qaAnswerDraft[qa.id], answered: true } : q)); setQaAnswerDraft((prev) => ({ ...prev, [qa.id]: '' })); }}}
+                            className="px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition">
+                            Post Answer
                           </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="sm:col-span-2">
-                          <FieldLabel>Chamber Name</FieldLabel>
-                          <Input value={ch.name} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, name: e.target.value } : c))} />
                         </div>
-                        <div className="sm:col-span-2">
-                          <FieldLabel>Address</FieldLabel>
-                          <Input value={ch.address} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, address: e.target.value } : c))} />
-                        </div>
-                        <div>
-                          <FieldLabel>City</FieldLabel>
-                          <Select value={ch.city} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, city: e.target.value } : c))}>
-                            {CITIES.map((city) => <option key={city}>{city}</option>)}
-                          </Select>
-                        </div>
-                        <div>
-                          <FieldLabel>Phone</FieldLabel>
-                          <Input value={ch.phone} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, phone: e.target.value } : c))} />
-                        </div>
-                        <div>
-                          <FieldLabel>New Patient Fee (৳)</FieldLabel>
-                          <Input type="number" value={ch.newFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, newFee: e.target.value } : c))} />
-                        </div>
-                        <div>
-                          <FieldLabel>Follow-up Fee (৳)</FieldLabel>
-                          <Input type="number" value={ch.followFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, followFee: e.target.value } : c))} />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                        <span className="text-sm font-semibold text-gray-700">Enable Online Consultation</span>
-                        <Toggle checked={ch.online} onChange={() => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, online: !c.online } : c))} />
-                      </div>
-                      {ch.online && (
-                        <div className="grid grid-cols-2 gap-3 mt-1">
-                          <div>
-                            <FieldLabel>Online New Patient Fee (৳)</FieldLabel>
-                            <Input type="number" value={ch.onlineNewFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, onlineNewFee: e.target.value } : c))} />
-                          </div>
-                          <div>
-                            <FieldLabel>Online Follow-up Fee (৳)</FieldLabel>
-                            <Input type="number" value={ch.onlineFollowFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, onlineFollowFee: e.target.value } : c))} />
-                          </div>
+                      )}
+                      {/* Action buttons for answered */}
+                      {qa.answered && qaEditId !== qa.id && (
+                        <div className="flex gap-2">
+                          <button onClick={() => { setQaEditId(qa.id); setQaEditText(qa.answer); }}
+                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition">
+                            <Edit2 className="w-3 h-3" /> Edit
+                          </button>
+                          <button onClick={() => setQas(qas.filter((q) => q.id !== qa.id))}
+                            className="text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1 transition">
+                            <Trash2 className="w-3 h-3" /> Delete
+                          </button>
                         </div>
                       )}
                     </div>
                   ))}
-                  {chambers.length < 3 && (
-                    <button
-                      onClick={() => updateChambers([...chambers, { id: `ch${Date.now()}`, name: '', address: '', city: 'Dhaka', phone: '', newFee: '', followFee: '', online: false, onlineNewFee: '', onlineFollowFee: '' }])}
-                      className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-semibold text-gray-400 hover:border-blue-400 hover:text-blue-600 transition flex items-center justify-center gap-2">
-                      <Plus className="w-4 h-4" /> Add Chamber
-                    </button>
-                  )}
                 </div>
-                <SaveButton />
-              </>
-            )}
-
-            {/* ── Availability ── */}
-            {activeTab === 'availability' && (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-base font-bold text-gray-900">Availability</h3>
-                </div>
-
-                {/* Chamber tabs */}
-                <div className="flex gap-1.5 flex-wrap border-b border-gray-100 pb-3 mb-5">
-                  {availabilities.map((a) => (
-                    <button
-                      key={a.chamberId}
-                      onClick={() => setActiveAvailTab(a.chamberId)}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition ${
-                        activeAvailTab === a.chamberId
-                          ? 'bg-blue-600 text-white shadow-sm shadow-blue-100'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {a.isOnline ? <Wifi className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
-                      {a.isOnline ? 'Online' : a.chamberName || `Chamber ${availabilities.indexOf(a) + 1}`}
-                    </button>
-                  ))}
-                </div>
-
-                {currentAvail && (
-                  <ChamberAvailabilityPanel
-                    key={currentAvail.chamberId}
-                    avail={currentAvail}
-                    onChange={updateAvail}
-                  />
-                )}
-
-                <div className="pt-4 border-t border-gray-100 mt-2">
-                  <SaveButton label={`Save ${currentAvail?.isOnline ? 'Online' : currentAvail?.chamberName ?? 'Chamber'} Schedule`} />
-                </div>
-              </>
-            )}
-
-            {/* ── Booking ── */}
-            {activeTab === 'booking' && (
-              <>
-                <SectionLabel>Booking Settings</SectionLabel>
-                <div className="space-y-4">
-                  {[
-                    { label: 'Enable Online Booking', desc: 'Allow patients to book appointments online', val: onlineBooking, set: () => setOnlineBooking(!onlineBooking) },
-                    { label: 'Auto-confirm Appointments', desc: 'Automatically confirm new bookings without manual review', val: autoConfirm, set: () => setAutoConfirm(!autoConfirm) },
-                  ].map(({ label, desc, val, set }) => (
-                    <div key={label} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                      <div>
-                        <p className="text-sm font-bold text-gray-800">{label}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-                      </div>
-                      <Toggle checked={val} onChange={set} />
-                    </div>
-                  ))}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div><FieldLabel>Max Patients Per Day</FieldLabel><Input type="number" value={maxPatients} onChange={(e) => setMaxPatients(e.target.value)} /></div>
-                    <div><FieldLabel>Appointment Gap (minutes)</FieldLabel><Input type="number" value={apptGap} onChange={(e) => setApptGap(e.target.value)} /></div>
-                  </div>
-                </div>
-                <SaveButton />
-              </>
-            )}
-
-            {/* ── Notifications ── */}
-            {activeTab === 'notifications' && (
-              <>
-                <SectionLabel>Notification Preferences</SectionLabel>
-                <div className="space-y-3">
-                  {[
-                    { label: 'SMS Notifications', desc: 'Receive alerts via SMS', val: sms, set: () => setSms(!sms) },
-                    { label: 'Email Notifications', desc: 'Receive alerts via email', val: emailNotif, set: () => setEmailNotif(!emailNotif) },
-                    { label: 'New Appointment Alert', desc: 'Get notified when a new booking arrives', val: newApptAlert, set: () => setNewApptAlert(!newApptAlert) },
-                  ].map(({ label, desc, val, set }) => (
-                    <div key={label} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                      <div>
-                        <p className="text-sm font-bold text-gray-800">{label}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-                      </div>
-                      <Toggle checked={val} onChange={set} />
-                    </div>
-                  ))}
-                </div>
-                <SaveButton />
-              </>
-            )}
-
+              )}
+            </>)}
           </div>
         </div>
       </div>

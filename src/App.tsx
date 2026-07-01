@@ -12,6 +12,7 @@ import QueuePage from './pages/doctor/QueuePage';
 import NewPrescriptionPage from './pages/doctor/NewPrescriptionPage';
 import SettingsPage from './pages/doctor/SettingsPage';
 import AnalyticsPage from './pages/doctor/AnalyticsPage';
+import PatientsPage from './pages/doctor/PatientsPage';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/doctor/prescriptions/new" element={<NewPrescriptionPage />} />
         <Route path="/doctor/settings" element={<SettingsPage />} />
         <Route path="/doctor/analytics" element={<AnalyticsPage />} />
+        <Route path="/doctor/patients" element={<PatientsPage />} />
       </Routes>
     </BrowserRouter>
   );
