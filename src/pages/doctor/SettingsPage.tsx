@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import {
   User, Stethoscope, Building2, CalendarOff, Settings,
-  Bell, ShieldCheck, Star, Plus, X, Save, Wifi,
-  AlertTriangle, BadgeCheck, Clock, Flag,
-  MessageSquare, Edit2, Trash2, Users, Phone,
+  Bell, ShieldCheck, Plus, X, Save, Wifi,
+  AlertTriangle, BadgeCheck, Clock,
 } from 'lucide-react';
 import DoctorLayout from '../../components/DoctorLayout';
 import DobAgeInput, { type DobAgeValue, formatAgeLong } from '../../components/DobAgeInput';
@@ -15,18 +14,13 @@ const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', 'Rangpur'
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const TABS_LIST = [
-  { id: 'personal',       label: 'Personal Info',     icon: User },
-  { id: 'professional',   label: 'Professional',       icon: Stethoscope },
-  { id: 'verification',   label: 'Verification',       icon: ShieldCheck },
-  { id: 'chamber',        label: 'Chamber Settings',   icon: Building2 },
-  { id: 'myteam',         label: 'My Team',            icon: Users },
-  { id: 'availability',   label: 'Availability',       icon: CalendarOff },
-  { id: 'booking',        label: 'Booking Settings',   icon: Settings },
-  { id: 'notifications',  label: 'Notifications',      icon: Bell },
-  { id: 'reviews',        label: 'Reviews & Q&A',      icon: Star },
+  { id: 'personal',      label: 'Personal Info',   icon: User },
+  { id: 'professional',  label: 'Professional',     icon: Stethoscope },
+  { id: 'verification',  label: 'Verification',     icon: ShieldCheck },
+  { id: 'availability',  label: 'Availability',     icon: CalendarOff },
+  { id: 'booking',       label: 'Booking Settings', icon: Settings },
+  { id: 'notifications', label: 'Notifications',    icon: Bell },
 ];
-
-interface PSMember { id: number; name: string; phone: string; email: string; chambers: string[]; active: boolean; permissions: { queue: boolean; appointments: boolean; prescriptions: boolean; register: boolean; history: boolean } }
 
 interface DaySchedule { day: string; active: boolean; open: string; close: string; maxPatients: string }
 interface ChamberAvailability {
@@ -35,16 +29,8 @@ interface ChamberAvailability {
   unavailableDates: { date: string; reason: string }[];
   holidayMode: boolean; holidayFrom: string; holidayTo: string; holidayReason: string;
 }
-interface ChamberData {
-  id: string; name: string; address: string; city: string; phone: string;
-  newFee: string; followFee: string; online: boolean; onlineNewFee: string; onlineFollowFee: string;
-}
 interface Publication { id: number; title: string; journal: string; year: string; url: string }
 interface Award { id: number; name: string; org: string; year: string }
-interface Review {
-  id: number; patient: string; rating: number; comment: string; date: string; reply: string;
-}
-interface QA { id: number; question: string; answer: string; asker: string; date: string; answered: boolean }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,17 +72,6 @@ function SaveButton({ label = 'Save Changes' }: { label?: string }) {
   );
 }
 
-function Stars({ rating }: { rating: number }) {
-  return (
-    <div className="flex gap-0.5">
-      {[1,2,3,4,5].map((s) => (
-        <span key={s} className={`text-sm ${s <= rating ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
-      ))}
-    </div>
-  );
-}
-
-// Tags input
 function TagsInput({
   tags, onAdd, onRemove, placeholder, color = 'blue',
 }: {
@@ -298,159 +273,6 @@ function ChamberAvailabilityPanel({ avail, onChange }: { avail: ChamberAvailabil
   );
 }
 
-// ─── My Team Tab ──────────────────────────────────────────────────────────────
-
-const DEFAULT_PERMISSIONS = { queue: true, appointments: true, prescriptions: true, register: true, history: false };
-
-function MyTeamTab({ chambers }: { chambers: { id: string; name: string }[] }) {
-  const [members, setMembers] = useState<PSMember[]>([
-    { id: 1, name: 'Ratan Kumar', phone: '01712345678', email: 'ratan@example.com', chambers: ['ch1', 'ch2'], active: true, permissions: { queue: true, appointments: true, prescriptions: true, register: true, history: false } },
-  ]);
-  const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', email: '', chambers: [] as string[], permissions: { ...DEFAULT_PERMISSIONS } });
-
-  const toggleChamber = (id: string) => setForm((f) => ({ ...f, chambers: f.chambers.includes(id) ? f.chambers.filter((c) => c !== id) : [...f.chambers, id] }));
-  const togglePerm = (key: keyof typeof DEFAULT_PERMISSIONS) => setForm((f) => ({ ...f, permissions: { ...f.permissions, [key]: !f.permissions[key] } }));
-
-  const addMember = () => {
-    if (!form.name.trim() || !form.phone.trim()) return;
-    setMembers((m) => [...m, { id: Date.now(), ...form, active: true }]);
-    setForm({ name: '', phone: '', email: '', chambers: [], permissions: { ...DEFAULT_PERMISSIONS } });
-    setShowAdd(false);
-  };
-
-  const PERM_LABELS: { key: keyof typeof DEFAULT_PERMISSIONS; label: string; default: boolean }[] = [
-    { key: 'queue', label: 'Manage Queue', default: true },
-    { key: 'appointments', label: 'Manage Appointments', default: true },
-    { key: 'prescriptions', label: 'View & Print Prescriptions', default: true },
-    { key: 'register', label: 'Register New Patients', default: true },
-    { key: 'history', label: 'View Patient Visit History', default: false },
-  ];
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <SectionLabel>My Team — Patient Secretaries</SectionLabel>
-          <p className="text-xs text-gray-400 -mt-3 mb-4">PS members can log in at <span className="font-semibold text-teal-600">/ps/dashboard</span> to manage queue and appointments.</p>
-        </div>
-        <button onClick={() => setShowAdd(!showAdd)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-xl hover:bg-teal-700 transition">
-          <Plus className="w-3.5 h-3.5" /> Add PS Member
-        </button>
-      </div>
-
-      {/* Existing members */}
-      <div className="space-y-3">
-        {members.length === 0 && !showAdd && (
-          <div className="border border-dashed border-gray-200 rounded-2xl p-8 text-center text-xs text-gray-400">
-            No team members added yet
-          </div>
-        )}
-        {members.map((m) => (
-          <div key={m.id} className="border border-gray-200 rounded-2xl p-4 space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                  <span className="text-sm font-black text-teal-700">{m.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}</span>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">{m.name}</p>
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3" />{m.phone}</p>
-                  <div className="flex gap-1.5 mt-1 flex-wrap">
-                    {m.chambers.map((cid) => {
-                      const ch = chambers.find((c) => c.id === cid);
-                      return ch ? <span key={cid} className="text-[10px] font-semibold px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">{ch.name}</span> : null;
-                    })}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${m.active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {m.active ? 'Active' : 'Inactive'}
-                </span>
-                <button onClick={() => setMembers((ms) => ms.map((x) => x.id === m.id ? { ...x, active: !x.active } : x))}
-                  className="text-xs font-semibold text-orange-500 hover:text-orange-700 transition px-2 py-1 rounded-lg hover:bg-orange-50">
-                  {m.active ? 'Deactivate' : 'Activate'}
-                </button>
-                <button onClick={() => setMembers((ms) => ms.filter((x) => x.id !== m.id))}
-                  className="text-xs font-semibold text-red-500 hover:text-red-700 transition px-2 py-1 rounded-lg hover:bg-red-50">
-                  Remove
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-gray-100">
-              {PERM_LABELS.filter((pl) => m.permissions[pl.key]).map((pl) => (
-                <span key={pl.key} className="text-[10px] font-semibold px-2 py-0.5 bg-teal-50 text-teal-700 rounded-full">{pl.label}</span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Add form */}
-      {showAdd && (
-        <div className="border-2 border-teal-200 bg-teal-50/30 rounded-2xl p-5 space-y-4">
-          <p className="text-sm font-bold text-gray-800">Add New PS Member</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <FieldLabel>Full Name <span className="text-red-500">*</span></FieldLabel>
-              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="Full name" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
-            </div>
-            <div>
-              <FieldLabel>Phone <span className="text-red-500">*</span></FieldLabel>
-              <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                placeholder="01XXXXXXXXX" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
-            </div>
-            <div className="sm:col-span-2">
-              <FieldLabel>Email (optional)</FieldLabel>
-              <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                placeholder="ps@example.com" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
-            </div>
-          </div>
-          <div>
-            <FieldLabel>Assign to Chamber</FieldLabel>
-            <div className="space-y-2">
-              {chambers.map((ch) => (
-                <label key={ch.id} className="flex items-center gap-2 cursor-pointer select-none">
-                  <input type="checkbox" checked={form.chambers.includes(ch.id)} onChange={() => toggleChamber(ch.id)} className="w-4 h-4 accent-teal-600 rounded" />
-                  <span className="text-sm font-semibold text-gray-700">{ch.name}</span>
-                </label>
-              ))}
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox"
-                  checked={form.chambers.length === chambers.length}
-                  onChange={() => setForm((f) => ({ ...f, chambers: f.chambers.length === chambers.length ? [] : chambers.map((c) => c.id) }))}
-                  className="w-4 h-4 accent-teal-600 rounded" />
-                <span className="text-sm font-semibold text-gray-600 italic">All Chambers</span>
-              </label>
-            </div>
-          </div>
-          <div>
-            <FieldLabel>Permissions</FieldLabel>
-            <div className="space-y-2">
-              {PERM_LABELS.map((pl) => (
-                <label key={pl.key} className="flex items-center gap-2 cursor-pointer select-none">
-                  <input type="checkbox" checked={form.permissions[pl.key]} onChange={() => togglePerm(pl.key)} className="w-4 h-4 accent-teal-600 rounded" />
-                  <span className="text-sm font-semibold text-gray-700">{pl.label}</span>
-                  {pl.default && <span className="text-[10px] text-gray-400">(default on)</span>}
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={addMember} className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 transition">
-              <Plus className="w-4 h-4" /> Add PS Member
-            </button>
-            <button onClick={() => setShowAdd(false)} className="px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition">Cancel</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -461,7 +283,6 @@ export default function SettingsPage() {
   const [email, setEmail] = useState('dr.rahim@email.com');
   const [phone, setPhone] = useState('1712345678');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
-  const [dob, setDob] = useState('1982-05-15');
   const [dobAge, setDobAge] = useState<DobAgeValue>({ dob: '1982-05-15', ageManual: '' });
   const [bio, setBio] = useState('Experienced Cardiologist with over 12 years of practice.');
   const [longBio, setLongBio] = useState('Dr. Rahim Uddin is a distinguished Cardiologist with over 12 years of experience in the management of complex cardiovascular conditions. He completed his MBBS from Dhaka Medical College and his MD in Cardiology from NICVD. He has trained at leading cardiac centres in India and the UK. He is known for his patient-centred approach and evidence-based practice. He currently practices at Green Life Medical Centre, Dhanmondi.');
@@ -477,29 +298,18 @@ export default function SettingsPage() {
     { id: 1, name: 'Best Young Cardiologist Award', org: 'Bangladesh Cardiac Society', year: '2020' },
   ]);
 
-  // ── Chambers
-  const [chambers, setChambers] = useState<ChamberData[]>([
-    { id: 'ch1', name: 'Dhanmondi Chamber', address: 'House 32, Road 7, Dhanmondi', city: 'Dhaka', phone: '02-8612345', newFee: '800', followFee: '500', online: true, onlineNewFee: '600', onlineFollowFee: '400' },
-    { id: 'ch2', name: 'Popular Chamber', address: 'Shyamoli, Dhaka', city: 'Dhaka', phone: '02-9101234', newFee: '1000', followFee: '600', online: false, onlineNewFee: '', onlineFollowFee: '' },
-  ]);
-
-  // ── Availability
-  const buildAvail = (chs: ChamberData[]) => {
-    const result = chs.map((c) => defaultChamberAvail(c.id, c.name));
-    if (chs.some((c) => c.online)) result.push(defaultChamberAvail('online', 'Online', true));
+  // ── Availability (chamber list comes from ChambersPage; we mirror basic data here for scheduling)
+  const chamberList = [
+    { id: 'ch1', name: 'Dhanmondi Chamber', online: true },
+    { id: 'ch2', name: 'Popular Chamber', online: false },
+  ];
+  const buildAvail = () => {
+    const result = chamberList.map((c) => defaultChamberAvail(c.id, c.name));
+    if (chamberList.some((c) => c.online)) result.push(defaultChamberAvail('online', 'Online', true));
     return result;
   };
-  const [availabilities, setAvailabilities] = useState<ChamberAvailability[]>(() => buildAvail(chambers));
+  const [availabilities, setAvailabilities] = useState<ChamberAvailability[]>(buildAvail);
   const [activeAvailTab, setActiveAvailTab] = useState('ch1');
-
-  const updateChambers = (updated: ChamberData[]) => {
-    setChambers(updated);
-    setAvailabilities((prev) => {
-      const next = updated.map((c) => { const e = prev.find((a) => a.chamberId === c.id); return e ? { ...e, chamberName: c.name } : defaultChamberAvail(c.id, c.name); });
-      if (updated.some((c) => c.online)) { const e = prev.find((a) => a.chamberId === 'online'); next.push(e ?? defaultChamberAvail('online', 'Online', true)); }
-      return next;
-    });
-  };
   const currentAvail = availabilities.find((a) => a.chamberId === activeAvailTab) ?? availabilities[0];
 
   // ── Booking
@@ -513,62 +323,34 @@ export default function SettingsPage() {
   const [emailNotif, setEmailNotif] = useState(true);
   const [newApptAlert, setNewApptAlert] = useState(true);
 
-  // ── Reviews
-  const [reviewsTab, setReviewsTab] = useState<'reviews' | 'qa'>('reviews');
-  const [reviews, setReviews] = useState<Review[]>([
-    { id: 1, patient: 'K***m H.', rating: 5, comment: 'Excellent doctor. Very thorough and caring.', date: '28 Jun 2026', reply: '' },
-    { id: 2, patient: 'F***a B.', rating: 4, comment: 'Very professional and explained everything clearly.', date: '25 Jun 2026', reply: '' },
-    { id: 3, patient: 'R***q A.', rating: 5, comment: 'Best cardiologist I have been to. Highly recommended!', date: '20 Jun 2026', reply: 'Thank you for your kind words.' },
-    { id: 4, patient: 'N***n A.', rating: 3, comment: 'Good doctor but long waiting time.', date: '18 Jun 2026', reply: '' },
-  ]);
-  const [replyDraft, setReplyDraft] = useState<Record<number, string>>({});
-  const [replyOpen, setReplyOpen] = useState<number | null>(null);
-
-  const [qas, setQas] = useState<QA[]>([
-    { id: 1, question: 'What is the difference between angina and heart attack?', answer: 'Angina is chest pain caused by reduced blood flow, while a heart attack is when blood flow is completely blocked.', asker: 'A***f M.', date: '29 Jun 2026', answered: true },
-    { id: 2, question: 'Is it safe to exercise with mild hypertension?', answer: 'Yes, moderate exercise is generally safe and beneficial with mild hypertension. Always consult your doctor.', asker: 'S***a K.', date: '27 Jun 2026', answered: true },
-    { id: 3, question: 'What foods should I avoid with high cholesterol?', answer: '', asker: 'T***l R.', date: '30 Jun 2026', answered: false },
-    { id: 4, question: 'How often should I get my ECG done?', answer: '', asker: 'P***y S.', date: '1 Jul 2026', answered: false },
-  ]);
-  const [qaEditId, setQaEditId] = useState<number | null>(null);
-  const [qaEditText, setQaEditText] = useState('');
-  const [qaAnswerDraft, setQaAnswerDraft] = useState<Record<number, string>>({});
-  const unanswered = qas.filter((q) => !q.answered).length;
-
   return (
     <DoctorLayout>
       <div className="p-4 sm:p-6 max-w-[1050px]">
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Settings</h2>
+          <h2 className="text-xl font-bold text-gray-900">Profile Settings</h2>
           <p className="text-sm text-gray-500 mt-0.5">Manage your profile and preferences</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-5">
-          {/* Sidebar */}
+          {/* Tab sidebar */}
           <div className="sm:w-52 shrink-0">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-2 space-y-0.5 sm:sticky sm:top-20">
               {TABS_LIST.map(({ id, label, icon: Icon }) => (
                 <button key={id} onClick={() => setActiveTab(id)}
-                  className={`w-full flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-                  <div className="flex items-center gap-2.5">
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span className="text-left leading-tight">{label}</span>
-                  </div>
-                  {id === 'reviews' && unanswered > 0 && (
-                    <span className={`text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${activeTab === id ? 'bg-white text-blue-600' : 'bg-red-500 text-white'}`}>{unanswered}</span>
-                  )}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="text-left leading-tight">{label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Content */}
+          {/* Content panel */}
           <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6 min-w-0">
 
             {/* ══════════════ PERSONAL INFO ══════════════ */}
             {activeTab === 'personal' && (<>
               <SectionLabel>Personal Information</SectionLabel>
-              {/* Photo */}
               <div className="flex items-center gap-5">
                 <img src="https://images.pexels.com/photos/5452293/pexels-photo-5452293.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-20 h-20 rounded-full object-cover border-2 border-gray-100 shadow" />
                 <div>
@@ -582,10 +364,9 @@ export default function SettingsPage() {
                 <div><FieldLabel>Phone</FieldLabel><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
                 <div className="sm:col-span-2">
                   <FieldLabel>Date of Birth / Age</FieldLabel>
-                  <DobAgeInput value={dobAge} onChange={(v) => { setDobAge(v); setDob(v.dob); }} />
+                  <DobAgeInput value={dobAge} onChange={(v) => setDobAge(v)} />
                   {dobAge.dob && <p className="text-xs text-green-700 font-semibold mt-1">Age: {formatAgeLong(dobAge.dob)}</p>}
                 </div>
-                {/* Doctor ID read-only */}
                 <div className="sm:col-span-2">
                   <FieldLabel>Doctor ID</FieldLabel>
                   <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
@@ -598,7 +379,6 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-              {/* Gender */}
               <div>
                 <FieldLabel>Gender</FieldLabel>
                 <div className="flex gap-4">
@@ -610,29 +390,21 @@ export default function SettingsPage() {
                   ))}
                 </div>
               </div>
-              {/* Languages */}
               <div>
                 <FieldLabel note="Press Enter or comma to add">Languages Spoken</FieldLabel>
                 <TagsInput tags={languages} onAdd={(t) => setLanguages([...languages, t])} onRemove={(t) => setLanguages(languages.filter((l) => l !== t))} placeholder="e.g. Bangla, English…" />
               </div>
-              {/* Short bio */}
               <div>
                 <FieldLabel note="Shown on doctor cards and search results">Short Bio</FieldLabel>
                 <textarea rows={2} value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <p className="text-[11px] text-gray-400 text-right mt-1">{bio.length}/200</p>
               </div>
-              {/* Long bio */}
               <div>
                 <FieldLabel note="Shown on your full doctor profile page">Full Profile Bio</FieldLabel>
                 <textarea rows={6} value={longBio} onChange={(e) => setLongBio(e.target.value.slice(0, 1000))}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <p className="text-[11px] text-gray-400 text-right mt-1">{longBio.length}/1000</p>
-                {!bio && longBio && (
-                  <button onClick={() => setBio(longBio.slice(0, 150))} className="text-[11px] text-blue-600 hover:text-blue-800 transition mt-1">
-                    Auto-fill Short Bio from first 150 characters
-                  </button>
-                )}
               </div>
               <SaveButton />
             </>)}
@@ -656,12 +428,10 @@ export default function SettingsPage() {
                 <div><FieldLabel>Years of Experience</FieldLabel><Input type="number" defaultValue="12" /></div>
                 <div><FieldLabel>Current Hospital</FieldLabel><Input defaultValue="Green Life Medical Centre" /></div>
               </div>
-              {/* Concentration tags */}
               <div>
                 <FieldLabel note="Press Enter or comma to add">Field of Concentration</FieldLabel>
                 <TagsInput tags={concentration} onAdd={(t) => setConcentration([...concentration, t])} onRemove={(t) => setConcentration(concentration.filter((c) => c !== t))} placeholder="e.g. Stroke, Epilepsy…" color="purple" />
               </div>
-
               <div className="border-t border-gray-100 pt-5">
                 <div className="flex items-center justify-between mb-3">
                   <SectionLabel>Research & Publications</SectionLabel>
@@ -693,7 +463,6 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
-
               <div className="border-t border-gray-100 pt-5">
                 <div className="flex items-center justify-between mb-3">
                   <SectionLabel>Awards & Recognition</SectionLabel>
@@ -734,8 +503,6 @@ export default function SettingsPage() {
                 <h3 className="text-base font-bold text-gray-900">Verification Status</h3>
               </div>
               <p className="text-xs text-gray-400 mb-5">Verification is controlled by the admin team. Contact admin for any issues.</p>
-
-              {/* Progress */}
               <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-5">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-bold text-gray-800">Overall Profile Status</p>
@@ -746,9 +513,7 @@ export default function SettingsPage() {
                 </div>
                 <p className="text-xs text-gray-500">Complete all verifications to unlock full profile visibility.</p>
               </div>
-
               <div className="space-y-4">
-                {/* BMDC */}
                 <div className="border border-gray-200 rounded-2xl p-4">
                   <div className="flex items-start justify-between">
                     <div>
@@ -761,8 +526,6 @@ export default function SettingsPage() {
                     </span>
                   </div>
                 </div>
-
-                {/* NID */}
                 <div className="border border-gray-200 rounded-2xl p-4">
                   <div className="flex items-start justify-between">
                     <div>
@@ -774,16 +537,11 @@ export default function SettingsPage() {
                     </span>
                   </div>
                 </div>
-
-                {/* Chamber verification */}
                 <div className="border border-gray-200 rounded-2xl p-4">
                   <p className="text-sm font-bold text-gray-800 mb-3">Chamber Verification</p>
                   <p className="text-xs text-gray-400 mb-3">Admin visits chamber to verify. This may take 3–5 business days.</p>
                   <div className="space-y-2.5">
-                    {[
-                      { name: 'Dhanmondi Chamber', status: 'Verified' },
-                      { name: 'Popular Chamber', status: 'Pending' },
-                    ].map(({ name, status }) => (
+                    {[{ name: 'Dhanmondi Chamber', status: 'Verified' }, { name: 'Popular Chamber', status: 'Pending' }].map(({ name, status }) => (
                       <div key={name} className="flex items-center justify-between bg-gray-50 rounded-xl px-3.5 py-2.5">
                         <span className="text-sm text-gray-700 font-medium">{name}</span>
                         <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${status === 'Verified' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
@@ -793,8 +551,6 @@ export default function SettingsPage() {
                     ))}
                   </div>
                 </div>
-
-                {/* Photo */}
                 <div className="border border-gray-200 rounded-2xl p-4">
                   <div className="flex items-start justify-between">
                     <div>
@@ -807,55 +563,12 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-sm font-semibold text-gray-700 mb-2">Need help with verification?</p>
                 <a href="mailto:admin@emergentHealth.com" className="inline-flex items-center gap-2 px-5 py-2.5 border border-blue-200 text-blue-600 text-sm font-bold rounded-xl hover:bg-blue-50 transition">
                   Contact Admin
                 </a>
               </div>
-            </>)}
-
-            {/* ══════════════ CHAMBER SETTINGS ══════════════ */}
-            {activeTab === 'chamber' && (<>
-              <SectionLabel>Chamber Settings</SectionLabel>
-              <div className="space-y-5">
-                {chambers.map((ch, i) => (
-                  <div key={ch.id} className="border border-gray-200 rounded-2xl p-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-bold text-gray-800">Chamber {i + 1}</p>
-                      {chambers.length > 1 && <button onClick={() => updateChambers(chambers.filter((c) => c.id !== ch.id))} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"><X className="w-3.5 h-3.5" /> Remove</button>}
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="sm:col-span-2"><FieldLabel>Chamber Name</FieldLabel><Input value={ch.name} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, name: e.target.value } : c))} /></div>
-                      <div className="sm:col-span-2"><FieldLabel>Address</FieldLabel><Input value={ch.address} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, address: e.target.value } : c))} /></div>
-                      <div><FieldLabel>City</FieldLabel>
-                        <select value={ch.city} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, city: e.target.value } : c))} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">{CITIES.map((city) => <option key={city}>{city}</option>)}</select>
-                      </div>
-                      <div><FieldLabel>Phone</FieldLabel><Input value={ch.phone} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, phone: e.target.value } : c))} /></div>
-                      <div><FieldLabel>New Patient Fee (৳)</FieldLabel><Input type="number" value={ch.newFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, newFee: e.target.value } : c))} /></div>
-                      <div><FieldLabel>Follow-up Fee (৳)</FieldLabel><Input type="number" value={ch.followFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, followFee: e.target.value } : c))} /></div>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <span className="text-sm font-semibold text-gray-700">Enable Online Consultation</span>
-                      <Toggle checked={ch.online} onChange={() => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, online: !c.online } : c))} />
-                    </div>
-                    {ch.online && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div><FieldLabel>Online New Patient Fee (৳)</FieldLabel><Input type="number" value={ch.onlineNewFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, onlineNewFee: e.target.value } : c))} /></div>
-                        <div><FieldLabel>Online Follow-up Fee (৳)</FieldLabel><Input type="number" value={ch.onlineFollowFee} onChange={(e) => updateChambers(chambers.map((c) => c.id === ch.id ? { ...c, onlineFollowFee: e.target.value } : c))} /></div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {chambers.length < 3 && (
-                  <button onClick={() => updateChambers([...chambers, { id: `ch${Date.now()}`, name: '', address: '', city: 'Dhaka', phone: '', newFee: '', followFee: '', online: false, onlineNewFee: '', onlineFollowFee: '' }])}
-                    className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-semibold text-gray-400 hover:border-blue-400 hover:text-blue-600 transition flex items-center justify-center gap-2">
-                    <Plus className="w-4 h-4" /> Add Chamber
-                  </button>
-                )}
-              </div>
-              <SaveButton />
             </>)}
 
             {/* ══════════════ AVAILABILITY ══════════════ */}
@@ -897,9 +610,6 @@ export default function SettingsPage() {
               <SaveButton />
             </>)}
 
-            {/* ══════════════ MY TEAM ══════════════ */}
-            {activeTab === 'myteam' && (<MyTeamTab chambers={chambers} />)}
-
             {/* ══════════════ NOTIFICATIONS ══════════════ */}
             {activeTab === 'notifications' && (<>
               <SectionLabel>Notification Preferences</SectionLabel>
@@ -918,144 +628,6 @@ export default function SettingsPage() {
               <SaveButton />
             </>)}
 
-            {/* ══════════════ REVIEWS & Q&A ══════════════ */}
-            {activeTab === 'reviews' && (<>
-              {/* Sub-tabs */}
-              <div className="flex gap-1.5 border-b border-gray-100 pb-3 mb-5">
-                <button onClick={() => setReviewsTab('reviews')}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${reviewsTab === 'reviews' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                  Reviews ({reviews.length})
-                </button>
-                <button onClick={() => setReviewsTab('qa')}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition ${reviewsTab === 'qa' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                  Q&A ({qas.length})
-                  {unanswered > 0 && <span className={`text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center ${reviewsTab === 'qa' ? 'bg-white text-blue-600' : 'bg-red-500 text-white'}`}>{unanswered}</span>}
-                </button>
-              </div>
-
-              {/* Reviews */}
-              {reviewsTab === 'reviews' && (
-                <div className="space-y-4">
-                  <p className="text-xs text-gray-400">Patient reviews cannot be edited or deleted. You may reply or report inappropriate reviews.</p>
-                  {reviews.map((r) => (
-                    <div key={r.id} className="border border-gray-200 rounded-2xl p-4 space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-bold text-gray-800">{r.patient}</span>
-                            <Stars rating={r.rating} />
-                          </div>
-                          <p className="text-sm text-gray-600">{r.comment}</p>
-                          <p className="text-xs text-gray-400 mt-1">{r.date}</p>
-                        </div>
-                        <button className="shrink-0 p-1.5 rounded-lg text-gray-300 hover:text-orange-500 hover:bg-orange-50 transition" title="Report">
-                          <Flag className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      {/* Existing reply */}
-                      {r.reply && (
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5">
-                          <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Your Reply</p>
-                          <p className="text-xs text-gray-700">{r.reply}</p>
-                        </div>
-                      )}
-                      {/* Reply box */}
-                      {replyOpen === r.id ? (
-                        <div className="space-y-2">
-                          <textarea rows={2} value={replyDraft[r.id] ?? ''}
-                            onChange={(e) => setReplyDraft((prev) => ({ ...prev, [r.id]: e.target.value }))}
-                            placeholder="Write your reply…"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                          <div className="flex gap-2">
-                            <button onClick={() => { setReviews(reviews.map((rv) => rv.id === r.id ? { ...rv, reply: replyDraft[r.id] ?? '' } : rv)); setReplyOpen(null); }}
-                              className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition">
-                              Post Reply
-                            </button>
-                            <button onClick={() => setReplyOpen(null)} className="px-4 py-2 text-gray-500 text-xs font-semibold rounded-lg hover:bg-gray-100 transition">Cancel</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <button onClick={() => { setReplyOpen(r.id); setReplyDraft((prev) => ({ ...prev, [r.id]: r.reply })); }}
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition">
-                          <MessageSquare className="w-3.5 h-3.5" /> {r.reply ? 'Edit Reply' : 'Reply'}
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Q&A */}
-              {reviewsTab === 'qa' && (
-                <div className="space-y-4">
-                  {unanswered > 0 && (
-                    <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-xl px-3.5 py-2.5">
-                      <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />
-                      <span className="text-xs font-semibold text-orange-700">{unanswered} unanswered question{unanswered > 1 ? 's' : ''} — reply to help your patients</span>
-                    </div>
-                  )}
-                  {qas.map((qa) => (
-                    <div key={qa.id} className={`border rounded-2xl p-4 space-y-3 ${qa.answered ? 'border-gray-200' : 'border-orange-200 bg-orange-50/30'}`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-800">{qa.question}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{qa.asker} · {qa.date}</p>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0 ${qa.answered ? 'bg-green-50 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                          {qa.answered ? 'Answered' : 'Unanswered'}
-                        </span>
-                      </div>
-                      {/* Answer */}
-                      {qa.answered && qaEditId !== qa.id && (
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5">
-                          <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Your Answer</p>
-                          <p className="text-xs text-gray-700">{qa.answer}</p>
-                        </div>
-                      )}
-                      {/* Edit answer */}
-                      {qaEditId === qa.id && (
-                        <div className="space-y-2">
-                          <textarea rows={3} value={qaEditText}
-                            onChange={(e) => setQaEditText(e.target.value)}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-blue-300 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                          <div className="flex gap-2">
-                            <button onClick={() => { setQas(qas.map((q) => q.id === qa.id ? { ...q, answer: qaEditText, answered: true } : q)); setQaEditId(null); }}
-                              className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition">Save</button>
-                            <button onClick={() => setQaEditId(null)} className="px-4 py-2 text-gray-500 text-xs font-semibold rounded-lg hover:bg-gray-100 transition">Cancel</button>
-                          </div>
-                        </div>
-                      )}
-                      {/* Unanswered: answer box */}
-                      {!qa.answered && qaEditId !== qa.id && (
-                        <div className="space-y-2">
-                          <textarea rows={2} value={qaAnswerDraft[qa.id] ?? ''}
-                            onChange={(e) => setQaAnswerDraft((prev) => ({ ...prev, [qa.id]: e.target.value }))}
-                            placeholder="Write your answer…"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                          <button onClick={() => { if (qaAnswerDraft[qa.id]?.trim()) { setQas(qas.map((q) => q.id === qa.id ? { ...q, answer: qaAnswerDraft[qa.id], answered: true } : q)); setQaAnswerDraft((prev) => ({ ...prev, [qa.id]: '' })); }}}
-                            className="px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition">
-                            Post Answer
-                          </button>
-                        </div>
-                      )}
-                      {/* Action buttons for answered */}
-                      {qa.answered && qaEditId !== qa.id && (
-                        <div className="flex gap-2">
-                          <button onClick={() => { setQaEditId(qa.id); setQaEditText(qa.answer); }}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition">
-                            <Edit2 className="w-3 h-3" /> Edit
-                          </button>
-                          <button onClick={() => setQas(qas.filter((q) => q.id !== qa.id))}
-                            className="text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1 transition">
-                            <Trash2 className="w-3 h-3" /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>)}
           </div>
         </div>
       </div>

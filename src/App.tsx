@@ -8,6 +8,8 @@ import LiveQueuePage from './pages/LiveQueuePage';
 import MedicinesPage from './pages/MedicinesPage';
 import MedicineDetailPage from './pages/MedicineDetailPage';
 import JoinAsDoctorPage from './pages/JoinAsDoctorPage';
+import MCQsPage from './pages/MCQsPage';
+import QuestionsPage from './pages/QuestionsPage';
 import DoctorDashboard from './pages/doctor/DashboardPage';
 import AppointmentsPage from './pages/doctor/AppointmentsPage';
 import QueuePage from './pages/doctor/QueuePage';
@@ -15,7 +17,10 @@ import NewPrescriptionPage from './pages/doctor/NewPrescriptionPage';
 import SettingsPage from './pages/doctor/SettingsPage';
 import AnalyticsPage from './pages/doctor/AnalyticsPage';
 import PatientsPage from './pages/doctor/PatientsPage';
+import ChambersPage from './pages/doctor/ChambersPage';
 import TeamPage from './pages/doctor/TeamPage';
+import QAPage from './pages/doctor/QAPage';
+import ReviewsPage from './pages/doctor/ReviewsPage';
 import PSDashboardPage from './pages/ps/DashboardPage';
 import PSQueuePage from './pages/ps/QueuePage';
 import PSAppointmentsPage from './pages/ps/AppointmentsPage';
@@ -36,6 +41,8 @@ export default function App() {
         <Route path="/medicines" element={<MedicinesPage />} />
         <Route path="/medicines/:slug" element={<MedicineDetailPage />} />
         <Route path="/join-as-doctor" element={<JoinAsDoctorPage />} />
+        <Route path="/mcqs" element={<MCQsPage />} />
+        <Route path="/questions" element={<QuestionsPage />} />
         {/* Doctor portal */}
         <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
         <Route path="/doctor/appointments" element={<AppointmentsPage />} />
@@ -44,7 +51,10 @@ export default function App() {
         <Route path="/doctor/settings" element={<SettingsPage />} />
         <Route path="/doctor/analytics" element={<AnalyticsPage />} />
         <Route path="/doctor/patients" element={<PatientsPage />} />
+        <Route path="/doctor/chambers" element={<ChambersPage />} />
         <Route path="/doctor/team" element={<TeamPage />} />
+        <Route path="/doctor/qa" element={<QAPage />} />
+        <Route path="/doctor/reviews" element={<ReviewsPage />} />
         {/* PS portal */}
         <Route path="/ps/dashboard" element={<PSDashboardPage />} />
         <Route path="/ps/queue" element={<PSQueuePage />} />
